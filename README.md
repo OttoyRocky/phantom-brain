@@ -16,23 +16,16 @@ automáticos — sin internet, sin APIs externas, sin mandar tus datos a ningún
 
 
 
-\## Hardware del proyecto
-
-\- Flipper Zero con WiFi board (Momentum)
-
-\- WiFi Pineapple Mark VII
-
-\- Cardputer M5Stack con Bruce
-
-\- DSTIKE Deauther Watch (ESP8266 + ATmega32U4)
-
-\- Proxmark3 Kit
-
-\- M5Stack M5StickC Plus2
-
-\- Raspberry Pi 4B con Kali Linux
-
-\- PC Windows 11 con WSL (cerebro central)
+## Hardware del proyecto
+- Flipper Zero con WiFi board (Momentum) + AIO board v1.4
+- WiFi Pineapple Mark VII
+- Cardputer M5Stack con Bruce
+- DSTIKE Deauther Watch (ESP8266 + ATmega32U4)
+- Proxmark3 Kit
+- M5Stack M5StickC Plus2
+- Raspberry Pi 4B con Kali Linux
+- USB WiFi Atheros AR9271 con antena 6dBi (modo monitor + packet injection)
+- PC Windows 11 con WSL (cerebro central)
 
 
 
