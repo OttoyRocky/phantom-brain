@@ -1,0 +1,74 @@
+PHANTOM BRAIN - Reporte de Analisis
+Fecha: 20260225_135021
+=======================================================
+
+INPUT ANALIZADO:
+=== ANALISIS FILTRADO DEL LOG MARAUDER ===
+
+[REDES CON WPS EXPUESTO - RIESGO CRITICO]
+- ESSID: IPLAN-229687 | BSSID: d8:a0:e8:c2:b2:c1 | Ch: 8 | RSSI: -76 dBm
+- ESSID: Jaimito | BSSID: f2:09:0d:29:47:86 | Ch: 9 | RSSI: -69 dBm
+- ESSID: Fibertel WiFi084 2.4Gz | BSSID: 42:33:06:3f:7e:9b | Ch: 11 | RSSI: -72 dBm
+- ESSID: Personal Wifi Zone | BSSID: 42:33:06:3f:7e:9b | Ch: 11 | RSSI: -72 dBm
+- ESSID: Andeluna | BSSID: 8e:90:2d:aa:94:4e | Ch: 3 | RSSI: -77 dBm
+- ESSID: Casa Ana-2.4Ghz | BSSID: f8:79:28:6a:b4:0c | Ch: 3 | RSSI: -77 dBm
+- ESSID: Fibertel WiFi147 2.4GHz | BSSID: 84:3c:99:38:1f:59 | Ch: 9 | RSSI: -74 dBm
+- ESSID: Personal Wifi Zone | BSSID: aa:50:81:f4:67:47 | Ch: 11 | RSSI: -71 dBm
+- ESSID: Andeluna | BSSID: 64:6e:60:ad:d2:8c | Ch: 2 | RSSI: -75 dBm
+- ESSID: Personal Wifi Zone | BSSID: a2:39:ee:b7:da:42 | Ch: 6 | RSSI: -73 dBm
+
+[REDES OCULTAS DETECTADAS - RIESGO ALTO]
+- BSSID: 8c:90:2d:aa:91:8a | Ch: 3 | RSSI: -67 dBm
+- BSSID: 46:ae:30:24:94:7e | Ch: 3 | RSSI: -72 dBm
+- BSSID: 46:ae:30:24:94:02 | Ch: 3 | RSSI: -62 dBm
+- BSSID: 4a:ae:30:24:94:02 | Ch: 3 | RSSI: -63 dBm
+- BSSID: 5a:56:c2:63:26:8b | Ch: 4 | RSSI: -71 dBm
+- BSSID: 42:33:06:4f:7e:9b | Ch: 11 | RSSI: -73 dBm
+- BSSID: f0:09:0d:f9:47:86 | Ch: 9 | RSSI: -66 dBm
+
+[ESTADISTICAS GENERALES]
+- Total redes detectadas: 157
+- Redes con WPS vulnerable: 10
+- Redes ocultas: 7
+
+
+ANALISIS:
+ === VULNERABILIDADES DETECTADAS ===
+
+**[REDES CON WPS EXPUESTO - RIESGO CRITICO]**
+
+- NIVEL: CRITICO
+- Nombre de la vulnerabilidad: WPS PIN Brute Force
+- Descripcion tecnica breve: La WPS puede ser explotada mediante un ataque bruto de claves, si el WPS es activado en los routers y dispositivos WiFi.
+
+**[REDES OCULTAS DETECTADAS - RIESGO ALTO]**
+
+- NIVEL: ALTO
+- Nombre de la vulnerabilidad: Redes ocultas sin WPS activado
+- Descripcion tecnica breve: Si una red es oculta pero no tiene WPS activado, se puede explotar el ataque MSD (Master Slave Discovery) para desocultarla y acceder a la red.
+
+=== VECTORES DE ATAQUE ===
+
+**[REDES CON WPS EXPUESTO - RIESGO CRITICO]**
+
+- OBJETIVO: IPLAN-229687
+- METODO: Utilizar el software Aircrack-ng para atacar la red mediante un ataque de forzado de claves WPS.
+  - HERRAMIENTA: aircrack-ng --bssid d8:a0:e8:c2:b2:c1 --wps
+
+- OBJETIVO: Jaimito
+  - METODO: Utilizar el software Aircrack-ng para atacar la red mediante un ataque de forzado de claves WPS.
+    - HERRAMIENTA: aircrack-ng --bssid f2:09:0d:29:47:86 --wps
+
+- OBJETIVO: Fibertel WiFi084 2.4Gz
+  - METODO: Utilizar el software Aircrack-ng para atacar la red mediante un ataque de forzado de claves WPS.
+    - HERRAMIENTA: aircrack-ng --bssid 42:33:06:3f:7e:9b --wps
+
+**[REDES OCULTAS DETECTADAS - RIESGO ALTO]**
+
+- OBJETIVO: 8c:90:2d:aa:91:8a
+  - METODO: Utilizar el software Reaver para descubrir la red oculta y obtener la clave WPA/WPA2.
+    - HERRAMIENTA: reaver -i <interface> -b <BSSID> -c <country code> --essid <ESSID> --channel <channel>
+
+=== COMANDOS SUGERIDOS ===
+
+**[REDES CON WPS EXPUESTO - RIESGO CRITICO]**

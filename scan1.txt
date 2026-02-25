@@ -1,0 +1,6 @@
+PORT 22/tcp open ssh
+PORT 80/tcp open http
+PORT 8080/tcp open http-proxy
+PORT 3306/tcp open mysql
+PORT 443/tcp open https
+PORT 21/tcp open ftp

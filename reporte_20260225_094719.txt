@@ -1,0 +1,30 @@
+PHANTOM BRAIN - Reporte de Análisis
+Fecha: 20260225_094719
+=======================================================
+
+INPUT ANALIZADO:
+PORT 22/tcp open ssh
+PORT 80/tcp open http
+PORT 8080/tcp open http-proxy
+PORT 3306/tcp open mysql
+PORT 443/tcp open https
+PORT 21/tcp open ftp
+
+ANÁLISIS:
+[VULNERABILIDADES DETECTADAS]
+- PORTA FTP/TCP abierta (Puerto 21): Riesgo MEDIO - Es seguro considerando que el protocolo está bien implementado, pero puede ser un vector de ataque por inseguridad del usuario.  
+[VECTORES DE ATAQUE]
+- Se podría ejecutar una búsqueda preliminar en la superficie para encontrar sistemas con puertos vulnerables abiertos como 21 FTP, utilizando herramientas de escaneo de red (Nmap).  
+[COMMANDOS SUGERIDO]
+- Para verificar si el servidor es sensible al comienzo del nombre de archivo en un ataque conocido: `testevil.sh -c 'touch /tmp/file; exit 0'` ejecutado contra cada máquina con puerto ftp abierto para buscar reacciones inusuales como errores que no serían esperados normalmente.
+[MITIGACIONES]
+- Para el Puerto FTP, la mejor práctica es configurar correctamente los permisos de archivo y usar un programa SSH basado en autenticación por contraseña más seguro o una combinación clave/puerta de entrada para mitigar riesgos. Además, utilizar software moderno como ProFTPD con módulos adicionales que mejoran la seguridad (modSecurity) y asegurarse de tener un firewall activo en línea del lado derecho para bloquear tráfico inexistente o anormal puede ser útil.
+
+[VULNERABILIDADES DETECTADAS]
+- PORTA SSH/TCP abierta (Puerto 22): Riesgo CRÍTICO - Es crítica la seguridad en el servidor SSH, especialmente con un puerto expuesto como tal.  
+[VECTORES DE ATAQUE]
+- Un atacante podría intentar ejecutar ataques de fuerza bruta para adueñarse del acceso directo al shell a través del puerto 22 utilizando herramientas automatizadas como Hydra.  
+[COMMANDOS SUGERIDO]
+- Para verificar la seguridad, se puede usar comandos que prueben el sistema de autenticación básica (`testevil.sh -c 'echo "password" | ssh root@<IP_DESTINO>'`). No se debe ejecutar contra redes legítimas para evitar sospechas y siempre respetando la privacidad, sin embargo es útil cuando se tiene acceso a un servidor conocido.
+[MITIGACIONES]
+- Para mejorar la seguridad del puerto SSH abierto: Utilice múltiples factores de autenticación como claves PGP/GPG o secretas para contraseñas, restricciones severas sobre las ubicaciones geográf0415nicas y horarios permitidos
