@@ -126,5 +126,5 @@ Para uso en entornos de laboratorio autorizados únicamente.
 ---
 **Versión:** 0.5  
 **Fecha actualización:** 26/02/2026  
-**Autor:** neurobelg  
+**Autor:** Otto&Rocky  
 **Comunidad:** AI Tinkerers
