@@ -1,130 +1,250 @@
 # PHANTOM BRAIN v0.5
 ## Sistema de Análisis Ofensivo Multi-Hardware con IA
 
-Herramienta de pentesting offline que integra análisis de seguridad para WiFi, Sub-GHz, NFC/RFID y WPA2 usando IA local (Ollama).
+Herramienta modular de pentesting que integra análisis de seguridad para WiFi, Sub-GHz, NFC/RFID y WPA2 usando IA local (Ollama).
 
-### ✅ Completado
+---
 
-#### 1. WiFi / Marauder (v0.1-0.3)
+## 📋 Arquitectura del Sistema
+```
+OPERACIONES DE CAMPO (Móviles):
+┌──────────────┐
+│ Flipper Zero │ ──► Captura Sub-GHz, NFC
+│              │     Batería: 40+ horas
+└──────────────┘
+
+┌──────────────┐
+│  Cardputer   │ ──► Dashboard portátil
+│  M5Stack     │     Teclado + Pantalla 2.4"
+│              │     Batería: 7-10 días
+└──────────────┘
+
+OPERACIONES DE BASE (Fijas):
+┌──────────────────┐
+│  Raspberry Pi    │ ──► Servidor centralizado
+│  Kali Linux      │     Flask API REST
+│  PHANTOM BRAIN   │     Procesa datos en vivo
+│  (enchufada)     │     Almacena reportes
+└──────────────────┘
+
+FLUJO DE DATOS:
+Flipper (campo) ──► Cardputer (visualiza) ──► Raspberry (procesa) ──► Cardputer (muestra resultados)
+```
+
+---
+
+## ✅ Features Completados
+
+### **1. WiFi / Marauder (v0.1-0.3)**
 - Parser de logs Marauder
 - Detección de redes WPS vulnerables
 - Identificación de redes ocultas
 - Estadísticas de seguridad
 
-#### 2. Sub-GHz / AIO Board (v0.4)
-- **Parser Sub-GHz** (`sub_ghz_parser.py`)
-  - Lectura archivos `.sub` del Flipper Zero
-  - Extracción: protocolo, frecuencia, keys, packets
-  
-- **Analyzer de patrones** (`sub_ghz_analyzer.py`)
-  - Detección de keys idénticas
-  - Hamming distance entre keys
-  - Análisis de protocolos reutilizados
-  - Frecuencias coincidentes
-  
-- **Integración PHANTOM BRAIN**
-  - Menú selectivo de capturas
-  - Análisis con IA (phi3:mini / mistral)
-  - Detecta: Rolling Code bypass, replay attacks, vulnerabilidades Security+ 2.0
-  - Reportes automáticos con timestamp
+### **2. Sub-GHz / AIO Board (v0.4)**
+**Parser Sub-GHz** (`sub_ghz_parser.py`)
+- Lectura archivos `.sub` del Flipper Zero
+- Extracción: protocolo, frecuencia, keys, packets
+- Soporta: Security+ 2.0, Rolling Code, Fixed Code
 
-#### 3. NFC/RFID / Proxmark3 (v0.4)
-- **Parser NFC** (`nfc_parser.py`)
-  - Lectura archivos `.nfc` del Flipper Zero
-  - Extracción: Device Type, Card Type, UID, Security Level, Memory Size
-  - Soporta: Mifare Classic, Mifare Plus, NTAG, FeliCa, etc
-  
-- **Analyzer de vulnerabilidades** (`nfc_analyzer.py`)
-  - Detección automática de vulnerabilidades por tipo de tarjeta
-  - Mifare Classic: Vulnerable a Darkside/Hardnested
-  - Mifare Plus SL1: Reader Authentication Bypass, sector 0 sin protección
-  - NTAG: Lectura completa si no está protegida
-  - Análisis de UIDs idénticos
-  
-- **Integración PHANTOM BRAIN**
-  - Menú selectivo con análisis de patrones
-  - Detecta explotaciones concretas (clonación, inyección APDU, relay attacks)
-  - Herramientas específicas: mfoc, mfcuk, proxmark3, flipper-zero
-  - Análisis especial para tarjetas SUBE (transporte público)
+**Analyzer de patrones** (`sub_ghz_analyzer.py`)
+- Detección de keys idénticas
+- Hamming distance entre keys
+- Análisis de protocolos reutilizados
 
-#### 4. WPA2 Handshakes / Pineapple (v0.5)
-- **Parser PCAP** (`pcap_parser_v2.py`)
-  - Lectura archivos `.pcap` con Scapy
-  - Extracción: BSSID, SSID, frames EAPOL, validación de handshake
-  - Detección de handshakes completos (4+ mensajes EAPOL)
-  
-- **Integración PHANTOM BRAIN**
-  - Menú selectivo de capturas WPA2
-  - Análisis de vulnerabilidades
-  - Recomendación de diccionarios (rockyou.txt)
-  - Comandos con hashcat, john, aircrack-ng
-  - Análisis de múltiples handshakes simultáneamente
+**Integración PHANTOM BRAIN**
+- Menú selectivo de capturas
+- Análisis con IA (phi3:mini / mistral)
+- Detecta: Rolling Code bypass, replay attacks
+- Reportes automáticos
 
-### 📊 Archivos Generados
-```
-C:\Users\neurobelg\Desktop\nueva\ai tinkerers\
-├── phantom_brain.py              # Sistema principal de análisis
-├── sub_ghz_parser.py             # Parser Sub-GHz
-├── sub_ghz_analyzer.py           # Analyzer patrones Sub-GHz
-├── nfc_parser.py                 # Parser NFC
-├── nfc_analyzer.py               # Analyzer vulnerabilidades NFC
-├── pcap_parser_v2.py             # Parser PCAP WPA2
-├── 893LM_7359_1.sub              # Captura Sub-GHz (Security+ 2.0)
-├── 893LM_7359_2.sub              # Captura Sub-GHz (Security+ 2.0)
-├── Sube.nfc                      # Captura NFC (Mifare Plus X SL1)
-├── *_eviltwin.pcap               # Capturas WPA2 (9 handshakes válidos)
-└── reporte_*.txt                 # Reportes generados automáticamente
-```
+### **3. NFC/RFID / Proxmark3 (v0.4)**
+**Parser NFC** (`nfc_parser.py`)
+- Lectura archivos `.nfc` del Flipper Zero
+- Extracción: Device Type, Card Type, UID, Security Level
+- Soporta: Mifare Classic, Mifare Plus, NTAG, FeliCa
 
-### 🚀 Uso
-```bash
-# Analizar Sub-GHz
-python phantom_brain.py
-# Opción 4 -> Seleccionar captura .sub
+**Analyzer de vulnerabilidades** (`nfc_analyzer.py`)
+- Detección automática por tipo de tarjeta
+- Mifare Plus SL1: Reader Authentication Bypass
+- Mifare Classic: Vulnerable a Darkside/Hardnested
+- Análisis de UIDs idénticos
 
-# Analizar NFC
-python phantom_brain.py
-# Opción 5 -> Seleccionar captura .nfc
+**Integración PHANTOM BRAIN**
+- Menú selectivo con análisis de patrones
+- Detecta explotaciones concretas
+- Herramientas: mfoc, mfcuk, proxmark3, flipper-zero
+- Análisis especial para SUBE (transporte público)
 
-# Analizar WPA2
-python phantom_brain.py
-# Opción 6 -> Seleccionar captura .pcap
+### **4. WPA2 Handshakes / Pineapple (v0.5)**
+**Parser PCAP** (`pcap_parser_v2.py`)
+- Lectura archivos `.pcap` con Scapy
+- Extracción: BSSID, SSID, frames EAPOL
+- Validación de handshakes completos (4+ mensajes EAPOL)
 
-# Ver patrones Sub-GHz
-python sub_ghz_analyzer.py
-
-# Ver patrones NFC
-python nfc_analyzer.py
-
-# Analizar PCAPs directamente
-python pcap_parser_v2.py
-```
-
-### 📋 Modelos IA Soportados
-
-- **phi3:mini** - Rápido, análisis básico
-- **mistral:7b-instruct** - Detallado, recomendado para análisis profundo
-
-### 🔜 Próximos Pasos
-
-5. **Raspberry Pi como servidor de campo** - Recibir datos en vivo
-6. **M5StickC Plus2 como dashboard** - Visualización en tiempo real
-7. **Demo final + repositorio público** - Para AI Tinkerers Community
-
-### 📝 Notas Técnicas
-
-- WiFi: Análisis offline de logs Marauder
-- Sub-GHz: Soporte Security+ 2.0, Rolling Code, Fixed Code
-- NFC: Soporte ISO14443-3A/4A, ISO15693, FeliCa, Mifare family
-- WPA2: Validación de handshakes 4-way, cracking con diccionarios
-- IA: Integración con Ollama para análisis offline
-
-### ⚠️ Disclaimer
-
-Para uso en entornos de laboratorio autorizados únicamente.
+**Integración PHANTOM BRAIN**
+- Menú selectivo de capturas WPA2
+- Análisis de vulnerabilidades
+- Recomendación de diccionarios (rockyou.txt)
+- Comandos con hashcat, john, aircrack-ng
+- Análisis de múltiples handshakes simultáneamente
 
 ---
-**Versión:** 0.5  
-**Fecha actualización:** 26/02/2026  
+
+## 🚀 Próximos Pasos (Roadmap v0.6+)
+
+### **6. Cardputer Dashboard (EN PROGRESO)**
+- Firmware M5Stack
+- Interfaz de 4 pantallas
+- Conexión WiFi
+- Lectura de reportes JSON
+- Botones para navegación
+- Teclado integrado para inputs
+
+### **7. Raspberry Pi - Servidor Base (Próximo)**
+- Kali Linux + Flask
+- Servidor API REST (/api/upload/*, /api/reports, /api/status)
+- Recibe datos de Flipper/Pineapple
+- Procesa con PHANTOM BRAIN
+- Base de datos SQLite/JSON
+
+### **8. Integración Completa (Futuro)**
+- Scripts de upload automático
+- Sincronización WiFi Flipper ↔ Raspberry
+- WebSocket para datos en tiempo real
+- Dashboard web (Raspberry)
+
+### **9. Demo Final + Community (Final)**
+- Documentación completa
+- Scripts listos para usar
+- Tutorial de instalación
+- Repositorio público para AI Tinkerers
+
+---
+
+## 📁 Estructura de Archivos
+```
+phantom-brain/
+├── phantom_brain.py          # Sistema principal de análisis
+├── sub_ghz_parser.py         # Parser Sub-GHz
+├── sub_ghz_analyzer.py       # Analyzer patrones Sub-GHz
+├── nfc_parser.py             # Parser NFC
+├── nfc_analyzer.py           # Analyzer vulnerabilidades NFC
+├── pcap_parser_v2.py         # Parser PCAP WPA2
+├── server.py                 # Flask API (Raspberry Pi)
+├── cardputer_dashboard.ino   # Firmware Cardputer (En desarrollo)
+├── 893LM_7359_1.sub          # Captura Sub-GHz ejemplo
+├── 893LM_7359_2.sub          # Captura Sub-GHz ejemplo
+├── Sube.nfc                  # Captura NFC ejemplo
+├── *.pcap                    # Capturas WPA2 ejemplos
+├── .gitignore                # Excluye reportes generados
+└── README.md                 # Este archivo
+```
+
+---
+
+## 🔧 Requisitos
+
+### **Windows (Para análisis)**
+- Python 3.11+
+- Ollama (para IA local)
+- Scapy, requests, flask
+
+### **Flipper Zero (Captura)**
+- Sub-GHz, NFC habilitados
+- Archivos: .sub, .nfc
+
+### **Cardputer (Dashboard)**
+- M5Stack firmware
+- WiFi integrado
+- Batería 2000 mAh (7-10 días)
+
+### **Raspberry Pi (Base - Futuro)**
+- Kali Linux
+- Python 3.11+
+- Flask, Scapy, requests
+- Conexión Ethernet/WiFi permanente
+
+### **Pineapple (Captura WiFi)**
+- Marauder/Evil Twin
+- Archivos: .pcap, .log
+
+---
+
+## 📊 Modelos IA
+
+- **phi3:mini** - Rápido, análisis básico (~10 segundos)
+- **mistral:7b-instruct** - Detallado, recomendado (~30 segundos)
+
+Ambos ejecutan **100% offline** con Ollama.
+
+---
+
+## 🎯 Casos de Uso
+
+### **Operación de Campo**
+```
+1. Captura con Flipper (Sub-GHz, NFC)
+2. Visualiza en Cardputer (reportes guardados)
+3. De vuelta a base → Envía a Raspberry
+4. Raspberry procesa → Cardputer visualiza resultados
+```
+
+### **Laboratorio/Oficina**
+```
+1. Raspberry siempre encendida (análisis en vivo)
+2. Múltiples Flipper capturando
+3. Cardputer como dashboard central
+4. Reportes automáticos en tiempo real
+```
+
+### **Análisis Offline (PC)**
+```
+1. Descarga archivos de Flipper/Pineapple a Windows
+2. Ejecuta PHANTOM BRAIN
+3. Genera reportes
+4. Visualiza en Cardputer (opcional)
+```
+
+---
+
+## 📝 Ejemplos de Uso
+```bash
+# Análisis en Windows
+python phantom_brain.py
+# Opción 4 → Sub-GHz
+# Opción 5 → NFC
+# Opción 6 → WPA2
+
+# Análisis directo
+python sub_ghz_analyzer.py
+python nfc_analyzer.py
+python pcap_parser_v2.py
+
+# Servidor Raspberry (futuro)
+python server.py
+# Escucha en http://0.0.0.0:5000
+```
+
+---
+
+## ⚠️ Disclaimer
+
+Este proyecto es para entornos de laboratorio autorizados únicamente.
+
+---
+
+## 📌 Versiones
+
+| Versión | Fecha | Features |
+|---------|-------|----------|
+| 0.5 | 26/02/2026 | WiFi, Sub-GHz, NFC, WPA2 completos |
+| 0.6 (EN PROG) | TBD | Cardputer Dashboard |
+| 0.7 | TBD | Raspberry Pi + Flask |
+| 1.0 | TBD | Demo final + Community |
+
+---
+
 **Autor:** Otto&Rocky  
-**Comunidad:** AI Tinkerers
+**Comunidad:** AI Tinkerers  
+**Repo:** https://github.com/OttoyRocky/phantom-brain
