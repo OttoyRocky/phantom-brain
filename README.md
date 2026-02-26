@@ -27,6 +27,86 @@ OPERACIONES DE BASE (Fijas):
 │  (enchufada)     │     Almacena reportes
 └──────────────────┘
 
+## 🏠 Distribución Física (Setup Real)
+
+### Hardware por Ubicación
+
+**UBICACIÓN 1: PC Windows (Análisis)**
+- Windows 10/11
+- Python 3.11+
+- Ollama + mistral:7b
+- PHANTOM BRAIN CLI
+- Cardputer Dashboard
+- USB para Flipper/Pineapple
+
+**UBICACIÓN 2: Raspberry Pi (Servidor Fijo)**
+- Kali Linux
+- Python 3.11+
+- Flask API
+- Atheros AR9271 (WiFi Marauder)
+- Ethernet permanente
+- Procesamiento 24/7
+
+**UBICACIÓN 3: Campo (Móvil)**
+- Flipper Zero (Sub-GHz, NFC)
+- WiFi Pineapple (WPA2)
+- Proxmark3 (RFID)
+- Cardputer (Dashboard)
+- M5StickC Plus2 (Opcional)
+- DSTIKE Deauther (WiFi)
+
+### Flujos de Datos Operativos
+
+**Opción 1: Análisis Local (Ahora - Windows)**
+```
+Flipper (campo) → USB → Windows PC
+                    ↓
+                python phantom_brain.py
+                    ↓
+                Reportes locales
+                    ↓
+                python cardputer_dashboard_v2.py
+```
+
+**Opción 2: Servidor Centralizado (Futuro - Raspberry)**
+```
+Flipper/Pineapple (campo)
+        ↓
+    De vuelta a casa
+        ↓
+    Conecta a Raspberry (USB/WiFi)
+        ↓
+    Raspberry procesa 24/7
+        ↓
+    Tu PC accede vía WiFi (API)
+        ↓
+    Cardputer visualiza
+```
+
+**Opción 3: Captura Continua (Avanzado)**
+```
+Raspberry:
+├─ Terminal 1: python server.py (recibe datos)
+└─ Terminal 2: marauder (captura WiFi viva)
+        ↓
+    Análisis en paralelo
+        ↓
+    Tu PC (remoto): Ver reportes vía HTTP
+        ↓
+    Cardputer: Dashboard en vivo
+```
+
+### Consideraciones de Distancia
+
+⚠️ **La Raspberry está fija en tu casa**
+- Ventaja: Procesa 24/7 sin batería
+- Desventaja: No viaja contigo
+
+✅ **Solución operativa:**
+1. En campo: Usa Flipper + Cardputer (análisis local)
+2. De vuelta: Envía datos a Raspberry (análisis profundo)
+3. Desde cualquier lugar: Accede a Raspberry vía WiFi
+
 FLUJO DE DATOS:
 Flipper (campo) ──► Cardputer (visualiza) ──► Raspberry (procesa) ──► Cardputer (muestra resultados)
 ```
