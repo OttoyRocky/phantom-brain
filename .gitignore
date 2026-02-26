@@ -1,5 +1,29 @@
+# Reportes generados
 reporte_*.txt
-scanap_*.log
-scan*.txt
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.Python
+
+# Archivos temporales
+*.tmp
+*.log
 *.cap
-*.pcap
+
+# Archivos sensibles (si los hay)
+*.key
+*.pem
+*.pass
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
