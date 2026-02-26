@@ -9,7 +9,7 @@ Herramienta modular de pentesting que integra análisis de seguridad para WiFi, 
 ```
 OPERACIONES DE CAMPO (Móviles):
 ┌──────────────┐
-│ Flipper Zero │ ──► Captura Sub-GHz, NFC
+│ Flipper Zero │ ──► Captura Sub-GHz, NFC, Wifi
 │              │     Batería: 40+ horas
 └──────────────┘
 
@@ -182,28 +182,48 @@ Ambos ejecutan **100% offline** con Ollama.
 
 ## 🎯 Casos de Uso
 
-### **Operación de Campo**
+### **Escenario 1: Análisis de Campo Simple (Actual)**
 ```
-1. Captura con Flipper (Sub-GHz, NFC)
-2. Visualiza en Cardputer (reportes guardados)
-3. De vuelta a base → Envía a Raspberry
-4. Raspberry procesa → Cardputer visualiza resultados
-```
-
-### **Laboratorio/Oficina**
-```
-1. Raspberry siempre encendida (análisis en vivo)
-2. Múltiples Flipper capturando
-3. Cardputer como dashboard central
-4. Reportes automáticos en tiempo real
+1. Captura con Flipper (Sub-GHz, NFC, WiFi)
+2. Regresas a casa con Windows PC
+3. Conectas Flipper → USB
+4. python phantom_brain.py
+5. Análisis completo en 30 segundos
+6. Visualiza reportes en Cardputer
 ```
 
-### **Análisis Offline (PC)**
+### **Escenario 2: Análisis de Base Centralizado (Futuro)**
 ```
-1. Descarga archivos de Flipper/Pineapple a Windows
-2. Ejecuta PHANTOM BRAIN
-3. Genera reportes
-4. Visualiza en Cardputer (opcional)
+1. Raspberry Pi siempre encendida
+2. Flipper/Pineapple capturan en campo
+3. Regresan y envían datos a Raspberry (WiFi/USB)
+4. Raspberry procesa automáticamente
+5. Cardputer visualiza resultados via WiFi
+6. Reportes almacenados en servidor
+```
+
+### **Escenario 3: Operación Profesional (Avanzado)**
+```
+Múltiples Flipper + Pineapple (campo)
+    ↓
+Raspberry Pi (hub central)
+    ├─→ Análisis paralelo
+    ├─→ Base de datos consolidada
+    ├─→ API para múltiples Cardputer
+    └─→ Dashboard web (futuro)
+```
+
+### **Escenario 4: Laboratorio/Oficina**
+```
+Windows PC + Raspberry Pi (redundancia)
+    ↓
+Flipper/Pineapple capturando
+    ↓
+Análisis en paralelo (Windows + Raspberry)
+    ↓
+Cardputer como monitor visual
+    ↓
+Reportes automáticos cada 5 minutos
 ```
 
 ---
