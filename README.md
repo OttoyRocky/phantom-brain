@@ -306,8 +306,17 @@ Este proyecto es para entornos de laboratorio autorizados únicamente.
 | Versión | Fecha | Features |
 |---------|-------|----------|
 | 0.5 | 26/02/2026 | WiFi, Sub-GHz, NFC, WPA2 completos |
-| 0.6 (EN PROG) | TBD | Raspberry Pi + Flask |
+| 0.6 | 27/02/2026 | Proxmark3 integrado (EM410x, MIFARE, EMV, ST25TA, Indala) |
+| 0.7 (EN PROG) | TBD | Raspberry Pi + Flask API |
 | 1.0 | TBD | Demo final + Community |
+
+---
+
+## 🔮 Próxima Sesión (Phantom Brain 4)
+1. Modelo IA especializado en ciberseguridad (via Ollama) - reemplazar phi3/mistral
+2. Raspberry Pi - instalar Ollama + PHANTOM BRAIN
+3. Flask server.py - API REST
+4. Integración completa Flipper/Pineapple → Raspberry
 
 ---
 
