@@ -33,3 +33,9 @@ proxmark/
 *.nfc
 *.pcap
 *.sub
+
+config.yaml
+phantom_brain.db
+phantom_brain.log
+reportes/
+
