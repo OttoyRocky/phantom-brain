@@ -1,0 +1,17 @@
+# PHANTOM BRAIN - Dependencias Python
+# Instalacion: pip install -r requirements.txt
+
+# IA - Ollama client
+ollama>=0.1.7
+
+# Analisis de capturas WiFi WPA2
+scapy>=2.5.0
+
+# Configuracion centralizada
+pyyaml>=6.0
+
+# Base de datos (incluida en Python stdlib, no requiere instalacion)
+# sqlite3
+
+# Analisis de patrones (incluida en Python stdlib)
+# re, os, logging, datetime
