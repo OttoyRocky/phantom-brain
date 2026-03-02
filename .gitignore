@@ -29,3 +29,7 @@ __pycache__/
 Thumbs.db
 OllamaSetup.exe
 proxmark/
+
+*.nfc
+*.pcap
+*.sub
