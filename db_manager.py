@@ -39,6 +39,7 @@ class DBManager:
             logger.error(f"Error al inicializar base de datos: {e}")
 
     def guardar_reporte(self, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen):
+        """Guarda reporte y retorna el ID insertado, o None en caso de error."""
         try:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             conn = sqlite3.connect(self.db_path)
@@ -47,11 +48,35 @@ class DBManager:
                 INSERT INTO reportes (timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen[:500]))
+            row_id = c.lastrowid
             conn.commit()
             conn.close()
-            logger.info(f"Reporte guardado en DB: tipo={tipo}, uid/bssid={uid_bssid}")
+            logger.info(f"Reporte guardado en DB: id={row_id}, tipo={tipo}, uid/bssid={uid_bssid}")
+            return row_id
         except Exception as e:
             logger.error(f"Error al guardar reporte en DB: {e}")
+            return None
+
+    def obtener_por_id(self, report_id):
+        """Obtiene un reporte por su ID. Retorna dict con todos los campos o None."""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            c = conn.cursor()
+            c.execute("""
+                SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen
+                FROM reportes WHERE id = ?
+            """, (report_id,))
+            row = c.fetchone()
+            conn.close()
+            if row:
+                return {
+                    "id": row[0], "timestamp": row[1], "tipo": row[2], "uid_bssid": row[3],
+                    "nivel_riesgo": row[4], "modelo_ia": row[5], "archivo_txt": row[6], "resumen": row[7],
+                }
+            return None
+        except Exception as e:
+            logger.error(f"Error al obtener reporte por ID: {e}")
+            return None
 
     def listar_reportes(self, tipo=None, limite=20):
         try:

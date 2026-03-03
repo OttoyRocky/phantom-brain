@@ -4,6 +4,9 @@
 # IA - Ollama client
 ollama>=0.1.7
 
+# API REST
+flask>=3.0.0
+
 # Analisis de capturas WiFi WPA2
 scapy>=2.5.0
 
