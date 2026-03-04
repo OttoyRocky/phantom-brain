@@ -1,0 +1,51 @@
+# PHANTOM BRAIN - Configuracion de ejemplo
+# Copiá este archivo como config.yaml y ajustá los valores a tu entorno
+# cp config.yaml.example config.yaml
+
+proyecto:
+  nombre: "PHANTOM BRAIN"
+  version: "0.6"
+
+# --- Rutas ---
+rutas:
+  # Carpeta donde están los archivos .pcap, .nfc, .sub
+  # Windows:     capturas: "C:/Users/neurobelg/Desktop/nueva/ai tinkerers"
+  # Raspberry:   capturas: "/media/kali/discoexterno/phantom-brain/capturas"
+  capturas: "."
+  reportes: "reportes"
+
+# --- Modelos disponibles (deben estar descargados en Ollama) ---
+modelos:
+  - nombre: "phi3:mini"
+    descripcion: "Rapido, respuestas cortas"
+  - nombre: "mistral:7b-instruct"
+    descripcion: "Completo, recomendado para analisis"
+  - nombre: "deepseek-r1:7b"
+    descripcion: "Especializado en ciberseguridad"
+
+# Modelo usado si el usuario presiona Enter sin elegir
+# Raspberry Pi 4 (4GB RAM): usar phi3:mini o mistral
+# Windows con mas RAM: deepseek-r1:7b o mistral
+modelo_por_defecto: "mistral:7b-instruct"
+
+# --- Parametros de la IA ---
+ia:
+  num_predict: 3000   # Longitud maxima de respuesta (tokens)
+  temperatura: 0.7    # 0.0 = deterministico, 1.0 = mas creativo
+
+# --- Base de datos SQLite ---
+base_de_datos:
+  archivo: "phantom_brain.db"
+  guardar_reportes: true
+
+# --- Logging ---
+logging:
+  nivel: "INFO"              # DEBUG | INFO | WARNING | ERROR
+  archivo: "phantom_brain.log"
+  consola: true
+
+# --- Flask API (usado por flask_api.py) ---
+# flask:
+#   host: "0.0.0.0"          # 0.0.0.0 para aceptar conexiones externas (Raspberry)
+#   port: 5000
+#   debug: false
