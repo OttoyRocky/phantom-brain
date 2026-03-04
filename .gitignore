@@ -1,5 +1,29 @@
-# Reportes generados
-reporte_*.txt
+# Reportes generados (contenido sensible)
+reportes/*.txt
+
+# Hashes de crackeo
+*.hc22000
+*.hc2500
+
+# Capturas de red
+*.pcap
+*.cap
+*.nfc
+*.sub
+
+# Scans y datos de reconocimiento
+recon-scan-*.json
+scan1.txt
+scanap_0.log
+
+# Base de datos local
+phantom_brain.db
+
+# Config local
+config.yaml
+
+# Logs
+*.log
 
 # Cache Python
 __pycache__/
@@ -10,10 +34,10 @@ __pycache__/
 
 # Archivos temporales
 *.tmp
-*.log
-*.cap
+*.swp
+*.swo
 
-# Archivos sensibles (si los hay)
+# Archivos sensibles
 *.key
 *.pem
 *.pass
@@ -21,21 +45,13 @@ __pycache__/
 # IDE
 .vscode/
 .idea/
-*.swp
-*.swo
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Instaladores
 OllamaSetup.exe
+
+# Hardware
 proxmark/
-
-*.nfc
-*.pcap
-*.sub
-
-config.yaml
-phantom_brain.db
-phantom_brain.log
-reportes/
-

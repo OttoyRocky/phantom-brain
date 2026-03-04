@@ -1,0 +1,78 @@
+# PHANTOM BRAIN - Cursor Rules
+# Proyecto de pentesting offline con IA local (Ollama)
+# Autor: OttoyRocky | Python 3.14 | Windows + Raspberry Pi (Kali Linux)
+
+## CONTEXTO DEL PROYECTO
+
+Phantom Brain es una herramienta de pentesting y análisis de seguridad que corre
+completamente offline usando modelos de IA locales via Ollama. Permite analizar
+capturas de red, tarjetas NFC/RFID, señales Sub-GHz y handshakes WPA2.
+
+## STACK TECNOLÓGICO
+
+- Python 3.14 (Windows principal) / Python 3.13 (Raspberry Pi 4B - Kali Linux)
+- Ollama (modelos locales: deepseek-r1:7b en Windows, phi3:mini en Raspberry)
+- SQLite via db_manager.py (historial de análisis)
+- Scapy (parseo de .pcap)
+- Flask (API REST - en desarrollo)
+- PyYAML (config.yaml)
+- PySerial (comunicación con Proxmark3)
+
+## ARQUITECTURA DE ARCHIVOS
+
+- `phantom_brain.py` — Script principal, menú CLI, integración con Ollama. NÚCLEO del proyecto.
+- `db_manager.py` — Gestión SQLite: historial, búsqueda, estadísticas, reportes críticos.
+- `config.yaml` — Configuración local (rutas, modelos, hardware). NUNCA subir al repo.
+- `pcap_parser_v2.py` — Parser WPA2: detecta handshake EAPOL y extrae PMKID. Hashcat -m 22000.
+- `proxmark_parser.py` — Parser output Proxmark3: EM410x, MIFARE Plus, EMV, ST25TA, Indala.
+- `proxmark_launch.bat` — Lanzador Windows para Proxmark3 CLI.
+- `nfc_parser.py` — Parser archivos .nfc del Flipper Zero.
+- `nfc_analyzer.py` — Análisis y clasificación de tags NFC.
+- `sub_ghz_parser.py` — Parser archivos .sub del Flipper Zero.
+- `sub_ghz_analyzer.py` — Análisis señales Sub-GHz (433MHz, 315MHz, etc).
+- `cardputer_dashboard.py` — Dashboard para M5Cardputer (en desarrollo).
+- `requirements.txt` — Dependencias del proyecto.
+
+## ARCHIVOS IGNORADOS (no modificar ni subir)
+
+- `config.yaml` (contiene rutas locales)
+- `phantom_brain.db` (base de datos SQLite local)
+- `phantom_brain.log` (logs locales)
+- `reportes/` (reportes generados)
+- Archivos `.nfc`, `.pcap`, `.sub` (capturas reales)
+
+## CONVENCIONES DE CÓDIGO
+
+- Idioma: español en comentarios, docstrings, mensajes al usuario y nombres de variables descriptivas.
+- Inglés solo en nombres de funciones/clases y keywords técnicos estándar.
+- Cada módulo tiene su propio parser (hereda patrón: parse() → get_data() → get_summary()).
+- Los análisis siempre generan un dict con: filename, vulnerabilities[], nivel (CRITICO/ALTO/MEDIO/INFO).
+- El SYSTEM_PROMPT de Ollama vive en phantom_brain.py y debe actualizarse cuando cambia la lógica de análisis.
+- Hashcat: siempre usar -m 22000 para WPA2. Nunca -m 2500 ni -m 1900 (obsoletos).
+- Tokens Ollama: max_tokens configurado en 3000.
+
+## HARDWARE SOPORTADO
+
+- Proxmark3 (via USB, cliente en Windows)
+- Flipper Zero (archivos .nfc y .sub exportados)
+- WiFi Marauder / Pineapple (capturas .pcap)
+- Raspberry Pi 4B 4GB (nodo remoto con Ollama + Flask API - en desarrollo)
+
+## ROADMAP ACTIVO (Phantom Brain 6)
+
+1. Flask API REST en Raspberry Pi (endpoint /analyze recibe datos, responde con análisis IA)
+2. Integración Flipper Zero → Raspberry Pi → Phantom Brain (pipeline completo)
+3. deepseek-r1:7b operativo en Windows como modelo principal
+4. Pruebas de phantom_brain.py corriendo en Raspberry Pi por primera vez
+5. config.yaml.example en el repo (para nuevos clones sin config local)
+
+## INSTRUCCIONES PARA CURSOR AI
+
+- Siempre respetar el patrón parser existente al agregar nuevos módulos.
+- No romper la integración Ollama en phantom_brain.py (función de análisis con streaming).
+- Al sugerir mejoras al SYSTEM_PROMPT, mantener las instrucciones de hashcat correctas.
+- Si se agrega Flask, crear flask_api.py separado, no mezclar con phantom_brain.py.
+- Al trabajar con SQLite, usar siempre db_manager.py, no abrir conexiones directas.
+- config.yaml nunca debe hardcodear rutas — usar variables relativas o expanduser().
+- Antes de sugerir nuevas dependencias, verificar compatibilidad con Python 3.14.
+- El proyecto debe seguir siendo 100% offline (sin APIs externas de IA).
