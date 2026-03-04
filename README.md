@@ -1,325 +1,236 @@
-# PHANTOM BRAIN v0.5
+# PHANTOM BRAIN v0.6
 ## Sistema de Análisis Ofensivo Offline con IA y Hardware Real
 
-Herramienta modular de pentesting que integra análisis de seguridad para WiFi, Sub-GHz, NFC/RFID y WPA2 usando IA local (Ollama).
+Herramienta modular de pentesting que integra análisis de seguridad para WiFi, Sub-GHz, NFC/RFID y WPA2 usando IA local (Ollama). Sin APIs externas, 100% offline.
 
 ---
 
-## 📋 Arquitectura del Sistema
+## Arquitectura del Sistema
+
 ```
-OPERACIONES DE CAMPO (Móviles):
+CAMPO (Móvil):
 ┌──────────────────┐
-│  Flipper Zero    │ ──► Captura: Sub-GHz, NFC, WiFi Scanning
-│                  │     Batería: 40+ horas
+│  Flipper Zero    │ ──→ Sub-GHz (.sub), NFC (.nfc), WiFi scanning
+└──────────────────┘
+┌──────────────────┐
+│  WiFi Pineapple  │ ──→ WPA2 Handshakes (.pcap), deauth, PMKID
+└──────────────────┘
+┌──────────────────┐
+│  Proxmark3       │ ──→ RFID/NFC avanzado (EM410x, MIFARE, EMV)
 └──────────────────┘
 
-┌──────────────────┐
-│  Pineapple       │ ──► Captura: WPA2 Handshakes, Evil Twin
-│  WiFi Hacking    │     Batería: 6-8 horas (con powerbank)
-└──────────────────┘
-
-┌──────────────────┐
-│  Proxmark3       │ ──► Captura: RFID/NFC avanzado
-│  (USB)           │     Análisis de tags complejos
-└──────────────────┘
-
-OPERACIONES DE BASE (Fijas):
-┌──────────────────┐
-│   Windows PC     │ ──► PHANTOM BRAIN CLI
-│   + Python 3.11  │     Análisis completo
-│   + Ollama       │     Reportes automáticos
-└──────────────────┘
-
+BASE (Fija):
 ┌──────────────────────┐
-│  Raspberry Pi        │ ──► Servidor centralizado (Futuro)
-│  Kali Linux          │     Flask API REST
-│  PHANTOM BRAIN       │     Procesa datos en vivo
-│  (enchufada 24/7)    │     Captura WiFi con Atheros
+│  Windows PC          │ ──→ PHANTOM BRAIN CLI + Flask API
+│  Python 3.14 + Ollama│     Análisis completo, reportes automáticos
+└──────────────────────┘
+┌──────────────────────┐
+│  Raspberry Pi 4      │ ──→ Servidor centralizado (en desarrollo)
+│  Kali Linux + Ollama │     Flask API, procesa capturas remotas
 └──────────────────────┘
 ```
 
 ---
 
-## ✅ Features Completados
+## Features Completados
 
-### **1. WiFi / Marauder (v0.1-0.3)**
+### WiFi / Marauder
 - Parser de logs Marauder
 - Detección de redes WPS vulnerables
 - Identificación de redes ocultas
 - Estadísticas de seguridad
 
-### **2. Sub-GHz / AIO Board (v0.4)**
-**Parser Sub-GHz** (`sub_ghz_parser.py`)
-- Lectura archivos `.sub` del Flipper Zero
+### Sub-GHz / Flipper Zero
+- Parser de archivos `.sub` (`sub_ghz_parser.py`)
 - Extracción: protocolo, frecuencia, keys, packets
 - Soporta: Security+ 2.0, Rolling Code, Fixed Code
+- Analyzer de patrones entre capturas (`sub_ghz_analyzer.py`)
 
-**Analyzer de patrones** (`sub_ghz_analyzer.py`)
-- Detección de keys idénticas
-- Hamming distance entre keys
-- Análisis de protocolos reutilizados
-- Frecuencias coincidentes
-
-**Integración PHANTOM BRAIN**
-- Menú selectivo de capturas
-- Análisis con IA (phi3:mini / mistral)
-- Detecta: Rolling Code bypass, replay attacks
-- Reportes automáticos
-
-### **3. NFC/RFID / Proxmark3 (v0.4)**
-**Parser NFC** (`nfc_parser.py`)
-- Lectura archivos `.nfc` del Flipper Zero
-- Extracción: Device Type, Card Type, UID, Security Level
+### NFC / Flipper Zero + Proxmark3
+- Parser de archivos `.nfc` (`nfc_parser.py`)
 - Soporta: Mifare Classic, Mifare Plus, NTAG, FeliCa
-
-**Analyzer de vulnerabilidades** (`nfc_analyzer.py`)
-- Detección automática por tipo de tarjeta
-- Mifare Plus SL1: Reader Authentication Bypass
-- Mifare Classic: Vulnerable a Darkside/Hardnested
-- Análisis de UIDs idénticos
-
-**Integración PHANTOM BRAIN**
-- Menú selectivo con análisis de patrones
-- Detecta explotaciones concretas
-- Herramientas: mfoc, mfcuk, proxmark3, flipper-zero
+- Analyzer de vulnerabilidades (`nfc_analyzer.py`)
+- Detección: Darkside, Hardnested, Reader Auth Bypass
 - Análisis especial para SUBE (transporte público)
+- Parser de output Proxmark3 (`proxmark_parser.py`)
 
-### **4. WPA2 Handshakes / Pineapple (v0.5)**
-**Parser PCAP** (`pcap_parser_v2.py`)
-- Lectura archivos `.pcap` con Scapy
-- Extracción: BSSID, SSID, frames EAPOL
-- Validación de handshakes completos (4+ mensajes EAPOL)
+### WPA2 / WiFi Pineapple
+- Parser PCAP con Scapy (`pcap_parser_v2.py`)
+- Extracción: BSSID, SSID, frames EAPOL, PMKID
+- Validación de handshakes completos
+- Pipeline completo: `hcxpcapngtool` → `hashcat -m 22000`
 
-**Integración PHANTOM BRAIN**
-- Menú selectivo de capturas WPA2
-- Análisis de vulnerabilidades
-- Recomendación de diccionarios (rockyou.txt)
-- Comandos con hashcat, john, aircrack-ng
+### Base de Datos y Reportes
+- SQLite para historial de análisis (`db_manager.py`)
+- Reportes en texto plano con timestamp
+- Búsqueda por UID/BSSID, filtro por nivel de riesgo
+- Estadísticas de análisis
 
----
-
-## 🚀 Próximos Pasos (Roadmap v0.6+)
-
-### **5. Raspberry Pi - Servidor Base (EN PROGRESO)**
-- Kali Linux + Flask
-- Servidor API REST (/api/upload/*, /api/reports, /api/status)
-- Recibe datos de Flipper/Pineapple
-- Procesa con PHANTOM BRAIN
-- Captura WiFi simultánea con Atheros AR9271
-- Base de datos SQLite/JSON
-
-### **6. Integración Completa (Próximo)**
-- Scripts de upload automático
-- Sincronización WiFi Flipper ↔ Raspberry
-- WebSocket para datos en tiempo real
-- Dashboard web (Raspberry)
-
-### **7. Demo Final + Community (Final)**
-- Documentación completa
-- Scripts listos para usar
-- Tutorial de instalación
-- Repositorio público para AI Tinkerers
+### Flask API REST
+- `flask_api.py` operativo en puerto 5000
+- `GET /status` — verifica Ollama y modelos disponibles
+- `POST /upload` — recibe archivos `.pcap`, `.nfc`, `.sub`
+- `POST /analyze` — analiza con Ollama y guarda en SQLite
+- `GET /analysis/<id>` — consulta análisis guardado por ID
 
 ---
 
-## 📁 Estructura de Archivos
+## Modelos IA Soportados
+
+| Modelo | Velocidad | Recomendado para |
+|--------|-----------|-----------------|
+| `phi3:mini` | ~10s | Raspberry Pi 4 (4GB RAM) |
+| `mistral:7b-instruct` | ~30s | Análisis completo, comandos precisos |
+| `deepseek-r1:7b` | ~45s | Análisis detallado, mitigaciones |
+
+Todos ejecutan **100% offline** con Ollama.
+
+---
+
+## Estructura de Archivos
+
 ```
 phantom-brain/
-├── phantom_brain.py          # Sistema principal de análisis
-├── sub_ghz_parser.py         # Parser Sub-GHz
-├── sub_ghz_analyzer.py       # Analyzer patrones Sub-GHz
-├── nfc_parser.py             # Parser NFC
+├── phantom_brain.py          # CLI principal - punto de entrada
+├── flask_api.py              # API REST Flask
+├── db_manager.py             # SQLite - historial de reportes
+├── pcap_parser_v2.py         # Parser WPA2/PCAP
+├── proxmark_parser.py        # Parser output Proxmark3
+├── nfc_parser.py             # Parser archivos .nfc Flipper
 ├── nfc_analyzer.py           # Analyzer vulnerabilidades NFC
-├── pcap_parser_v2.py         # Parser PCAP WPA2
-├── server.py                 # Flask API (Raspberry Pi - Futuro)
-├── 893LM_7359_1.sub          # Captura Sub-GHz ejemplo
-├── 893LM_7359_2.sub          # Captura Sub-GHz ejemplo
-├── Sube.nfc                  # Captura NFC ejemplo
-├── *.pcap                    # Capturas WPA2 ejemplos
-├── archive/                  # Hardware desactivado temporalmente
-│   ├── cardputer_dashboard.py
-│   └── cardputer_dashboard_v2.py
-├── .gitignore                # Excluye reportes generados
-└── README.md                 # Este archivo
+├── sub_ghz_parser.py         # Parser archivos .sub Flipper
+├── sub_ghz_analyzer.py       # Analyzer patrones Sub-GHz
+├── cardputer_dashboard.py    # Dashboard para M5Stack Cardputer
+├── proxmark_launch.bat       # Script lanzador Proxmark3 (Windows)
+├── config.yaml.example       # Plantilla de configuración
+├── requirements.txt          # Dependencias Python
+├── reportes/                 # Reportes generados (ignorado en git)
+├── pcap/                     # Capturas WPA2 (ignorado en git)
+└── .cursorrules              # Contexto para Cursor AI
 ```
 
 ---
 
-## 🔧 Requisitos
+## Instalación
 
-### **Windows (Para análisis)**
-- Python 3.11+
-- Ollama (para IA local)
-- Scapy, requests, flask
+```bash
+# Clonar repo
+git clone https://github.com/OttoyRocky/phantom-brain.git
+cd phantom-brain
 
-### **Flipper Zero (Captura)**
-- Sub-GHz, NFC habilitados
-- Archivos: .sub, .nfc
+# Crear entorno virtual
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
 
-### **Pineapple (Captura WiFi)**
-- Marauder/Evil Twin
-- Archivos: .pcap, .log
+# Instalar dependencias
+pip install -r requirements.txt
 
-### **Proxmark3 (Captura RFID)**
-- Firmware actualizado
-- Archivos de captura compatible
+# Copiar y ajustar configuración
+cp config.yaml.example config.yaml
 
-### **Raspberry Pi (Base - Futuro)**
-- Kali Linux
-- Python 3.11+
-- Flask, Scapy, requests
-- Atheros AR9271 (WiFi)
-- Conexión Ethernet permanente
+# Instalar Ollama y descargar modelo
+ollama pull mistral:7b-instruct
+```
+
+### Raspberry Pi (Kali Linux)
+```bash
+# Configurar Ollama con modelos en disco externo
+echo 'export OLLAMA_MODELS=/media/kali/discoexterno/ollama' >> ~/.zshrc
+source ~/.zshrc
+ollama pull phi3:mini
+
+# Clonar repo en disco externo
+cd /media/kali/discoexterno
+git clone https://github.com/OttoyRocky/phantom-brain.git
+```
 
 ---
 
-## 📊 Modelos IA Soportados
+## Uso
 
-- **phi3:mini** - Rápido, análisis básico (~10 segundos)
-- **mistral:7b-instruct** - Detallado, recomendado (~30 segundos)
+```bash
+# Análisis interactivo (CLI)
+python phantom_brain.py
 
-Ambos ejecutan **100% offline** con Ollama.
+# API REST
+python flask_api.py
+# Escucha en http://127.0.0.1:5000
+
+# Verificar API
+curl http://127.0.0.1:5000/status
+
+# Enviar archivo para análisis
+curl -X POST http://127.0.0.1:5000/upload \
+  -F "file=@captura.pcap"
+
+curl -X POST http://127.0.0.1:5000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"tipo": "pcap", "datos": {"file_path": "captura.pcap"}}'
+```
 
 ---
 
-## 🏠 Distribución Física (Setup Real)
+## Flujos de Trabajo
 
-### Hardware por Ubicación
-
-**UBICACIÓN 1: PC Windows (Análisis)**
-- Windows 10/11
-- Python 3.11+
-- Ollama + mistral:7b
-- PHANTOM BRAIN CLI
-- USB para Flipper/Pineapple/Proxmark
-
-**UBICACIÓN 2: Raspberry Pi (Servidor Fijo)**
-- Kali Linux
-- Python 3.11+
-- Flask API (Futuro)
-- Atheros AR9271 (WiFi Marauder)
-- Ethernet permanente
-- Procesamiento 24/7
-
-**UBICACIÓN 3: Campo (Móvil)**
-- Flipper Zero (Sub-GHz, NFC)
-- WiFi Pineapple (WPA2)
-- Proxmark3 (RFID avanzado)
-
-### Flujos de Datos Operativos
-
-**Opción 1: Análisis Local (Ahora - Windows)**
+**Análisis local (Windows):**
 ```
-Flipper (campo) → USB → Windows PC
-                    ↓
-                python phantom_brain.py
-                    ↓
-                Reportes locales
+Flipper/Pineapple/Proxmark → USB → Windows PC
+                                        ↓
+                              python phantom_brain.py
+                                        ↓
+                              Reporte en reportes/
 ```
 
-**Opción 2: Servidor Centralizado (Futuro - Raspberry)**
+**Servidor centralizado (Raspberry Pi - en desarrollo):**
 ```
 Flipper/Pineapple (campo)
         ↓
-    De vuelta a casa
+  De vuelta a casa
         ↓
-    Conecta a Raspberry (USB/WiFi)
+  POST /upload → Raspberry Pi
         ↓
-    Raspberry procesa 24/7
+  POST /analyze → Ollama local
         ↓
-    Tu PC accede vía WiFi (API)
-```
-
-**Opción 3: Captura Continua (Avanzado)**
-```
-Raspberry:
-├─ Terminal 1: python server.py (recibe datos)
-└─ Terminal 2: marauder (captura WiFi viva)
-        ↓
-    Análisis en paralelo
-        ↓
-    Tu PC (remoto): Ver reportes vía HTTP
+  GET /analysis/<id> → Reporte
 ```
 
 ---
 
-## 🎯 Casos de Uso
+## Roadmap
 
-### **Escenario 1: Análisis de Campo Simple (Actual)**
-```
-1. Captura con Flipper (Sub-GHz, NFC, WiFi)
-2. Regresas a casa con Windows PC
-3. Conectas Flipper → USB
-4. python phantom_brain.py
-5. Análisis completo en 30 segundos
-```
-
-### **Escenario 2: Análisis de Base Centralizado (Futuro)**
-```
-1. Raspberry Pi siempre encendida
-2. Flipper/Pineapple capturan en campo
-3. Regresan y envían datos a Raspberry (WiFi/USB)
-4. Raspberry procesa automáticamente
-5. Reportes almacenados en servidor
-```
-
-### **Escenario 3: Operación Profesional (Avanzado)**
-```
-Múltiples Flipper + Pineapple (campo)
-    ↓
-Raspberry Pi (hub central)
-    ├─→ Análisis paralelo
-    ├─→ Base de datos consolidada
-    └─→ API para acceso remoto
-```
+| Versión | Estado | Features |
+|---------|--------|----------|
+| 0.1-0.3 | ✅ | WiFi / Marauder |
+| 0.4 | ✅ | Sub-GHz + NFC/RFID |
+| 0.5 | ✅ | WPA2 Handshakes + Proxmark3 |
+| 0.6 | ✅ | SQLite + Flask API + deepseek-r1:7b |
+| 0.7 | 🔄 | Raspberry Pi operativa + Flask API conectada |
+| 1.0 | ⏳ | Testing completo hardware real + demo |
 
 ---
 
-## 📝 Ejemplos de Uso
-```bash
-# Análisis en Windows
-python phantom_brain.py
-# Opción 4 → Sub-GHz
-# Opción 5 → NFC
-# Opción 6 → WPA2
+## Requisitos
 
-# Análisis directo
-python sub_ghz_analyzer.py
-python nfc_analyzer.py
-python pcap_parser_v2.py
+**Windows:**
+- Python 3.11+
+- Ollama
+- `pip install -r requirements.txt`
 
-# Servidor Raspberry (futuro)
-python server.py
-# Escucha en http://0.0.0.0:5000
-```
+**Raspberry Pi:**
+- Kali Linux
+- Python 3.11+
+- Ollama (modelos en disco externo recomendado)
+- Entorno virtual con dependencias
 
 ---
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 Este proyecto es para entornos de laboratorio autorizados únicamente.
 
 ---
 
-## 📌 Versiones
-
-| Versión | Fecha | Features |
-|---------|-------|----------|
-| 0.5 | 26/02/2026 | WiFi, Sub-GHz, NFC, WPA2 completos |
-| 0.6 | 27/02/2026 | Proxmark3 integrado (EM410x, MIFARE, EMV, ST25TA, Indala) |
-| 0.7 (EN PROG) | TBD | Raspberry Pi + Flask API |
-| 1.0 | TBD | Demo final + Community |
-
----
-
-## 🔮 Próxima Sesión (Phantom Brain 4)
-1. Modelo IA especializado en ciberseguridad (via Ollama) - reemplazar phi3/mistral
-2. Raspberry Pi - instalar Ollama + PHANTOM BRAIN
-3. Flask server.py - API REST
-4. Integración completa Flipper/Pineapple → Raspberry
-
----
-
-**Autor:** Otto&Rocky  
+**Autor:** Otto & Rocky  
 **Comunidad:** AI Tinkerers  
 **Repo:** https://github.com/OttoyRocky/phantom-brain
