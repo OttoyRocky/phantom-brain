@@ -644,7 +644,7 @@ def obtener_input():
         archivo = input("\nNombre del archivo (ej: scan1.txt): ").strip()
         if not os.path.exists(archivo):
             print(f"[ERROR] Archivo '{archivo}' no encontrado.")
-            sys.exit(1)
+            return None, False, "Generico", None
         try:
             with open(archivo, "r", encoding="utf-8") as f:
                 contenido = f.read()
@@ -652,13 +652,13 @@ def obtener_input():
             return contenido, False, "Generico", None
         except Exception as e:
             print(f"[ERROR] No se pudo leer el archivo: {e}")
-            sys.exit(1)
+            return None, False, "Generico", None
 
     elif opcion == "3":
         archivo = input("\nNombre del archivo .log (ej: scanap_0.log): ").strip()
         if not os.path.exists(archivo):
             print(f"[ERROR] Archivo '{archivo}' no encontrado.")
-            sys.exit(1)
+            return None, False, "WiFi-Marauder", None
         try:
             with open(archivo, "r", encoding="utf-8") as f:
                 contenido = f.read()
@@ -670,7 +670,7 @@ def obtener_input():
             return filtrado, True, "WiFi-Marauder", None
         except Exception as e:
             print(f"[ERROR] No se pudo leer el archivo de log: {e}")
-            sys.exit(1)
+            return None, False, "WiFi-Marauder", None
 
     elif opcion == "4":
         print("Cargando capturas Sub-GHz disponibles...")
@@ -796,6 +796,9 @@ if __name__ == "__main__":
         scan_input, es_marauder, tipo_captura, datos_extra = obtener_input()
     except (KeyboardInterrupt, EOFError):
         sys.exit(0)
+    if scan_input is None:
+        print("[INFO] No se pudo obtener input. Saliendo.")
+        sys.exit(1)
     try:
         resultado = analizar(scan_input, modelo)
     except RuntimeError as e:

@@ -18,22 +18,20 @@ class DBManager:
 
     def _inicializar(self):
         try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("""
-                CREATE TABLE IF NOT EXISTS reportes (
-                    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-                    timestamp   TEXT NOT NULL,
-                    tipo        TEXT NOT NULL,
-                    uid_bssid   TEXT,
-                    nivel_riesgo TEXT,
-                    modelo_ia   TEXT,
-                    archivo_txt TEXT,
-                    resumen     TEXT
-                )
-            """)
-            conn.commit()
-            conn.close()
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS reportes (
+                        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                        timestamp   TEXT NOT NULL,
+                        tipo        TEXT NOT NULL,
+                        uid_bssid   TEXT,
+                        nivel_riesgo TEXT,
+                        modelo_ia   TEXT,
+                        archivo_txt TEXT,
+                        resumen     TEXT
+                    )
+                """)
+                conn.commit()
             logger.debug(f"Base de datos inicializada: {self.db_path}")
         except Exception as e:
             logger.error(f"Error al inicializar base de datos: {e}")
@@ -42,15 +40,14 @@ class DBManager:
         """Guarda reporte y retorna el ID insertado, o None en caso de error."""
         try:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("""
-                INSERT INTO reportes (timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
-            """, (timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen[:500]))
-            row_id = c.lastrowid
-            conn.commit()
-            conn.close()
+            with sqlite3.connect(self.db_path) as conn:
+                c = conn.cursor()
+                c.execute("""
+                    INSERT INTO reportes (timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen[:500]))
+                row_id = c.lastrowid
+                conn.commit()
             logger.info(f"Reporte guardado en DB: id={row_id}, tipo={tipo}, uid/bssid={uid_bssid}")
             return row_id
         except Exception as e:
@@ -60,14 +57,13 @@ class DBManager:
     def obtener_por_id(self, report_id):
         """Obtiene un reporte por su ID. Retorna dict con todos los campos o None."""
         try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("""
-                SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen
-                FROM reportes WHERE id = ?
-            """, (report_id,))
-            row = c.fetchone()
-            conn.close()
+            with sqlite3.connect(self.db_path) as conn:
+                c = conn.cursor()
+                c.execute("""
+                    SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, modelo_ia, archivo_txt, resumen
+                    FROM reportes WHERE id = ?
+                """, (report_id,))
+                row = c.fetchone()
             if row:
                 return {
                     "id": row[0], "timestamp": row[1], "tipo": row[2], "uid_bssid": row[3],
@@ -80,20 +76,19 @@ class DBManager:
 
     def listar_reportes(self, tipo=None, limite=20):
         try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            if tipo:
-                c.execute("""
-                    SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
-                    FROM reportes WHERE tipo = ? ORDER BY timestamp DESC LIMIT ?
-                """, (tipo, limite))
-            else:
-                c.execute("""
-                    SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
-                    FROM reportes ORDER BY timestamp DESC LIMIT ?
-                """, (limite,))
-            rows = c.fetchall()
-            conn.close()
+            with sqlite3.connect(self.db_path) as conn:
+                c = conn.cursor()
+                if tipo:
+                    c.execute("""
+                        SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
+                        FROM reportes WHERE tipo = ? ORDER BY timestamp DESC LIMIT ?
+                    """, (tipo, limite))
+                else:
+                    c.execute("""
+                        SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
+                        FROM reportes ORDER BY timestamp DESC LIMIT ?
+                    """, (limite,))
+                rows = c.fetchall()
             return rows
         except Exception as e:
             logger.error(f"Error al listar reportes: {e}")
@@ -101,14 +96,13 @@ class DBManager:
 
     def buscar_por_uid(self, uid):
         try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("""
-                SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
-                FROM reportes WHERE uid_bssid LIKE ? ORDER BY timestamp DESC
-            """, (f"%{uid}%",))
-            rows = c.fetchall()
-            conn.close()
+            with sqlite3.connect(self.db_path) as conn:
+                c = conn.cursor()
+                c.execute("""
+                    SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
+                    FROM reportes WHERE uid_bssid LIKE ? ORDER BY timestamp DESC
+                """, (f"%{uid}%",))
+                rows = c.fetchall()
             return rows
         except Exception as e:
             logger.error(f"Error al buscar por UID: {e}")
@@ -116,15 +110,14 @@ class DBManager:
 
     def reportes_criticos(self, limite=10):
         try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("""
-                SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
-                FROM reportes WHERE nivel_riesgo = 'CRITICO'
-                ORDER BY timestamp DESC LIMIT ?
-            """, (limite,))
-            rows = c.fetchall()
-            conn.close()
+            with sqlite3.connect(self.db_path) as conn:
+                c = conn.cursor()
+                c.execute("""
+                    SELECT id, timestamp, tipo, uid_bssid, nivel_riesgo, archivo_txt
+                    FROM reportes WHERE nivel_riesgo = 'CRITICO'
+                    ORDER BY timestamp DESC LIMIT ?
+                """, (limite,))
+                rows = c.fetchall()
             return rows
         except Exception as e:
             logger.error(f"Error al buscar criticos: {e}")
@@ -147,15 +140,14 @@ class DBManager:
 
     def estadisticas(self):
         try:
-            conn = sqlite3.connect(self.db_path)
-            c = conn.cursor()
-            c.execute("SELECT COUNT(*) FROM reportes")
-            total = c.fetchone()[0]
-            c.execute("SELECT tipo, COUNT(*) FROM reportes GROUP BY tipo")
-            por_tipo = c.fetchall()
-            c.execute("SELECT nivel_riesgo, COUNT(*) FROM reportes GROUP BY nivel_riesgo")
-            por_riesgo = c.fetchall()
-            conn.close()
+            with sqlite3.connect(self.db_path) as conn:
+                c = conn.cursor()
+                c.execute("SELECT COUNT(*) FROM reportes")
+                total = c.fetchone()[0]
+                c.execute("SELECT tipo, COUNT(*) FROM reportes GROUP BY tipo")
+                por_tipo = c.fetchall()
+                c.execute("SELECT nivel_riesgo, COUNT(*) FROM reportes GROUP BY nivel_riesgo")
+                por_riesgo = c.fetchall()
             print(f"\n=== ESTADISTICAS PHANTOM BRAIN ===")
             print(f"Total capturas analizadas: {total}")
             print("\nPor tipo:")

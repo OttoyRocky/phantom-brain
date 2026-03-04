@@ -155,45 +155,27 @@ def analyze():
         uid_bssid = None
         if datos_extra and isinstance(datos_extra, dict):
             uid_bssid = datos_extra.get("uid") or datos_extra.get("raw_id")
-        uid_bssid = uid_bssid or "N/A"
 
-        nivel_riesgo = pb.extraer_nivel_riesgo(resultado)
-        timestamp_str = datetime.now().strftime("%Y%m%d_%H%M%S")
-        archivo_txt = os.path.join(pb.CARPETA_REPORTES, f"reporte_{timestamp_str}.txt")
+        nombre_reporte = pb.guardar_reporte(
+            scan_input=scan_input,
+            resultado=resultado,
+            tipo=tipo,
+            uid_bssid=uid_bssid,
+            modelo=modelo,
+        )
 
-        try:
-            os.makedirs(pb.CARPETA_REPORTES, exist_ok=True)
-            with open(archivo_txt, "w", encoding="utf-8") as f:
-                f.write("PHANTOM BRAIN - Reporte de Analisis\n")
-                f.write(f"Version: {pb.CONFIG.get('proyecto', {}).get('version', '0.6')}\n")
-                f.write(f"Fecha: {timestamp_str}\n")
-                f.write(f"Tipo: {tipo}\n")
-                f.write(f"Modelo IA: {modelo}\n")
-                f.write("=" * 55 + "\n\n")
-                f.write("INPUT ANALIZADO:\n")
-                f.write(scan_input + "\n\n")
-                f.write("ANALISIS:\n")
-                f.write(resultado)
-        except Exception as e:
-            pb.logger.error(f"Error al guardar archivo de reporte: {e}")
-            archivo_txt = f"reporte_{timestamp_str}.txt"
-
+        # Obtener analysis_id de la DB si está disponible
         analysis_id = None
         if pb.DB is not None:
-            analysis_id = pb.DB.guardar_reporte(
-                tipo=tipo,
-                uid_bssid=uid_bssid,
-                nivel_riesgo=nivel_riesgo,
-                modelo_ia=modelo,
-                archivo_txt=archivo_txt,
-                resumen=resultado,
-            )
+            rows = pb.DB.listar_reportes(tipo=tipo, limite=1)
+            if rows:
+                analysis_id = rows[0][0]
 
         return _respuesta_base(
             success=True,
             analysis_id=analysis_id,
             type_=tipo,
-            results={"analysis": resultado, "report_file": archivo_txt},
+            results={"analysis": resultado, "report_file": nombre_reporte},
         )
 
     except ValueError as e:

@@ -29,7 +29,7 @@ class NFCParser:
                 'raw_content': content
             }
         except Exception as e:
-            print(f"Error parsing {filepath}: {str(e)}")
+            print(f"Error parsing {self.filepath}: {str(e)}")
     
     def extract_value(self, content, key):
         """Extrae valores del formato key: value"""

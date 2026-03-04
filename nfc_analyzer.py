@@ -22,37 +22,46 @@ class NFCAnalyzer:
             for j in range(i + 1, len(self.capturas)):
                 cap1 = self.capturas[i]
                 cap2 = self.capturas[j]
-                
-                # UIDs idénticos
-                if cap1['uid'] == cap2['uid']:
+
+                uid1 = cap1.get('uid')
+                uid2 = cap2.get('uid')
+                dt1 = cap1.get('device_type')
+                dt2 = cap2.get('device_type')
+                sl1 = cap1.get('security_level')
+                sl2 = cap2.get('security_level')
+                ct1 = cap1.get('card_type')
+                ct2 = cap2.get('card_type')
+
+                # UIDs idénticos (solo si no son None)
+                if uid1 is not None and uid1 == uid2:
                     patrones['uids_identicos'].append({
-                        'archivo1': cap1['filename'],
-                        'archivo2': cap2['filename'],
-                        'uid': cap1['uid']
+                        'archivo1': cap1.get('filename'),
+                        'archivo2': cap2.get('filename'),
+                        'uid': uid1
                     })
-                
-                # Mismo device type
-                if cap1['device_type'] == cap2['device_type']:
+
+                # Mismo device type (solo si no es None)
+                if dt1 is not None and dt1 == dt2:
                     patrones['mismo_device_type'].append({
-                        'archivo1': cap1['filename'],
-                        'archivo2': cap2['filename'],
-                        'device_type': cap1['device_type']
+                        'archivo1': cap1.get('filename'),
+                        'archivo2': cap2.get('filename'),
+                        'device_type': dt1
                     })
-                
-                # Mismo security level
-                if cap1['security_level'] == cap2['security_level']:
+
+                # Mismo security level (solo si no es None)
+                if sl1 is not None and sl1 == sl2:
                     patrones['mismo_security_level'].append({
-                        'archivo1': cap1['filename'],
-                        'archivo2': cap2['filename'],
-                        'security_level': cap1['security_level']
+                        'archivo1': cap1.get('filename'),
+                        'archivo2': cap2.get('filename'),
+                        'security_level': sl1
                     })
-                
-                # Mismo card type
-                if cap1['card_type'] == cap2['card_type']:
+
+                # Mismo card type (solo si no es None)
+                if ct1 is not None and ct1 == ct2:
                     patrones['mismo_card_type'].append({
-                        'archivo1': cap1['filename'],
-                        'archivo2': cap2['filename'],
-                        'card_type': cap1['card_type']
+                        'archivo1': cap1.get('filename'),
+                        'archivo2': cap2.get('filename'),
+                        'card_type': ct1
                     })
         
         return patrones

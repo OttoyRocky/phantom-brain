@@ -16,7 +16,7 @@ class ProxmarkParser:
             self.data['type'] = 'EM410x'
             self.data['frequency'] = '125kHz'
             self.data['protocol'] = 'LF'
-            uid = re.search(r'EM 410x ID\s+([0-9A-F]+)', self.raw)
+            uid = re.search(r'EM 410x ID\s+([0-9A-Fa-f]+)', self.raw, re.IGNORECASE)
             self.data['uid'] = uid.group(1) if uid else None
             chipset = re.search(r'Chipset\.\.\.\s+(.+)', self.raw)
             self.data['chipset'] = chipset.group(1).strip() if chipset else None

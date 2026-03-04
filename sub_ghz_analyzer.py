@@ -21,33 +21,38 @@ class SubGhzAnalyzer:
             for j in range(i + 1, len(self.capturas)):
                 cap1 = self.capturas[i]
                 cap2 = self.capturas[j]
-                
-                # Detectar keys idénticas
-                if cap1['key'] == cap2['key']:
+
+                key1 = cap1.get('key')
+                key2 = cap2.get('key')
+
+                # Detectar keys idénticas (solo si ninguna es None)
+                if key1 is not None and key2 is not None and key1 == key2:
                     patrones['keys_identicas'].append({
                         'archivo1': cap1['filename'],
                         'archivo2': cap2['filename'],
-                        'key': cap1['key']
+                        'key': key1
                     })
-                
-                # Detectar keys similares (hamming distance)
-                if self._hamming_distance(cap1['key'], cap2['key']) <= 2:
-                    patrones['keys_similares'].append({
-                        'archivo1': cap1['filename'],
-                        'archivo2': cap2['filename'],
-                        'distancia': self._hamming_distance(cap1['key'], cap2['key'])
-                    })
-                
+
+                # Detectar keys similares (hamming distance) — sin doble cómputo
+                elif key1 is not None and key2 is not None:
+                    distancia = self._hamming_distance(key1, key2)
+                    if distancia <= 2:
+                        patrones['keys_similares'].append({
+                            'archivo1': cap1['filename'],
+                            'archivo2': cap2['filename'],
+                            'distancia': distancia
+                        })
+
                 # Mismo protocolo
-                if cap1['protocol'] == cap2['protocol']:
+                if cap1.get('protocol') == cap2.get('protocol') and cap1.get('protocol') is not None:
                     patrones['mismo_protocolo'].append({
                         'archivo1': cap1['filename'],
                         'archivo2': cap2['filename'],
                         'protocolo': cap1['protocol']
                     })
-                
+
                 # Misma frecuencia
-                if cap1['frequency'] == cap2['frequency']:
+                if cap1.get('frequency') == cap2.get('frequency') and cap1.get('frequency') is not None:
                     patrones['frecuencias_identicas'].append({
                         'archivo1': cap1['filename'],
                         'archivo2': cap2['filename'],
@@ -74,7 +79,7 @@ class SubGhzAnalyzer:
                 byte2 = int(k2[i:i+2], 16)
                 xor = byte1 ^ byte2
                 distance += bin(xor).count('1')
-        except:
+        except (ValueError, IndexError):
             return float('inf')
         
         return distance

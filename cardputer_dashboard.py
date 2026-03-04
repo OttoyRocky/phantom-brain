@@ -1,14 +1,13 @@
 import os
 import json
 from datetime import datetime
-import serial
 import time
 
 class CardputerDashboard:
-    def __init__(self, port='COM5', baudrate=115200):
+    def __init__(self, port='COM5', baudrate=115200, reports_dir=None):
         self.port = port
         self.baudrate = baudrate
-        self.reports_dir = "."
+        self.reports_dir = reports_dir or "."
         
     def get_latest_report(self):
         """Obtiene el último reporte generado"""
@@ -18,12 +17,13 @@ class CardputerDashboard:
             return None
         
         reports.sort(reverse=True)
-        latest = reports[0]
-        
-        with open(latest, 'r', encoding='utf-8') as f:
+        latest_name = reports[0]
+        latest_path = os.path.join(self.reports_dir, latest_name)
+
+        with open(latest_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
-        return {'filename': latest, 'content': content}
+
+        return {'filename': latest_name, 'content': content}
     
     def parse_report(self, report_content):
         """Parsea el reporte para extraer datos clave"""
@@ -117,13 +117,11 @@ class CardputerDashboard:
         print(content[:1000])  # Primeros 1000 caracteres
         print("\n... (ver archivo completo para más detalles)")
         input("\nPresiona Enter para volver...")
-        self.display_dashboard()
     
     def _export_report(self, filename):
         """Exporta reporte"""
         print(f"\n✓ Reporte {filename} exportado")
         input("Presiona Enter para volver...")
-        self.display_dashboard()
 
 if __name__ == "__main__":
     dashboard = CardputerDashboard()
