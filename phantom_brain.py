@@ -18,21 +18,21 @@ import os
 import re
 import sys
 
-# ─── Intentar cargar PyYAML ────────────────────────────────────────────────
+# --- Intentar cargar PyYAML ---
 try:
     import yaml
     YAML_DISPONIBLE = True
 except ImportError:
     YAML_DISPONIBLE = False
 
-# ─── Intentar cargar Ollama ────────────────────────────────────────────────
+# --- Intentar cargar Ollama ---
 try:
     import ollama
 except ImportError:
     print("[ERROR] Ollama no esta instalado. Ejecuta: pip install ollama")
     sys.exit(1)
 
-# ─── Configuracion por defecto (se sobreescribe con config.yaml) ──────────
+# --- Configuracion por defecto (se sobreescribe con config.yaml) ---
 CONFIG_DEFAULT = {
     "proyecto": {"nombre": "PHANTOM BRAIN", "version": "0.6"},
     "rutas": {"capturas": ".", "reportes": "reportes"},
@@ -69,7 +69,7 @@ def configurar_logging(cfg):
     handlers = []
     if log_cfg.get("consola", True):
         ch = logging.StreamHandler()
-        ch.setLevel(logging.WARNING)  # En consola solo warnings y errores
+        ch.setLevel(logging.WARNING)
         ch.setFormatter(logging.Formatter("[%(levelname)s] %(message)s"))
         handlers.append(ch)
 
@@ -86,11 +86,11 @@ def configurar_logging(cfg):
     return logging.getLogger("phantom_brain")
 
 
-# ─── Cargar configuracion y logging ──────────────────────────────────────
+# --- Cargar configuracion y logging ---
 CONFIG = cargar_config()
 logger = configurar_logging(CONFIG)
 
-# ─── Inicializar carpeta de reportes ─────────────────────────────────────
+# --- Inicializar carpeta de reportes ---
 CARPETA_REPORTES = CONFIG.get("rutas", {}).get("reportes", "reportes")
 try:
     os.makedirs(CARPETA_REPORTES, exist_ok=True)
@@ -99,7 +99,7 @@ except Exception as e:
     logger.warning(f"No se pudo crear carpeta de reportes '{CARPETA_REPORTES}': {e}")
     CARPETA_REPORTES = "."
 
-# ─── Inicializar base de datos ────────────────────────────────────────────
+# --- Inicializar base de datos ---
 DB = None
 if CONFIG.get("base_de_datos", {}).get("guardar_reportes", True):
     try:
@@ -113,7 +113,7 @@ if CONFIG.get("base_de_datos", {}).get("guardar_reportes", True):
         logger.error(f"Error al inicializar base de datos: {e}")
 
 
-# ─── SYSTEM PROMPT ────────────────────────────────────────────────────────
+# --- SYSTEM PROMPT ---
 SYSTEM_PROMPT = """Eres PHANTOM BRAIN, especialista en seguridad ofensiva para NFC/RFID, Sub-GHz, WiFi e IoT.
 
 CUANDO ANALIZAS CAPTURAS WPA2:
@@ -123,23 +123,25 @@ CUANDO ANALIZAS CAPTURAS WPA2:
    - WPA2 Personal: vulnerable a ataques de diccionario/fuerza bruta
    - SSID oculta: dificulta pero no impide ataque
    - Weak password: detectable en patron de frames
-4. Recomienda herramientas: hashcat, john, aircrack-ng, zeek
+4. Recomienda herramientas: hashcat, hcxtools, aircrack-ng, zeek
 5. Para cada captura sugiere diccionarios apropiados
 6. Menciona CVSS scores si aplica
+7. WPA2/HASHCAT - REGLA OBLIGATORIA: SIEMPRE incluir como paso 1: hcxpcapngtool -o hash.hc22000 archivo.pcap (antes de cualquier hashcat). Usar SIEMPRE -m 22000 en hashcat. NUNCA usar -m 2500 ni -m 1900.
 
 CUANDO ANALIZAS CAPTURAS NFC:
 1. Identifica el estandar exacto (ISO14443-3A, ISO14443-4A, ISO15693, FeliCa, etc)
 2. Analiza el tipo de tarjeta (Mifare Classic, Mifare Plus, Mifare DESFire, NTAG, etc)
 3. Evalua el nivel de seguridad (SL0, SL1, SL2, SL3 para Mifare Plus)
-4. Busca vulnerabilidades especificas:
+4. Niveles de riesgo OBLIGATORIOS: tarjeta EM410x clonable sin cifrado = CRITICO (no BAJO). T55xx writeable = CRITICO.
+5. Busca vulnerabilidades especificas:
    - Mifare Classic: vulnerable a ataques de recuperacion de clave (Darkside, Hardnested)
    - Mifare Plus SL1: vulnerable a ataques sin autenticacion en primer sector
    - NTAG: vulnerable a lectura completa si no esta protegida
    - Mifare DESFire: mejor seguridad, pero vulnerable a relay attacks
-5. Analiza el UID para detectar patrones (UID clonable, UID fijo, etc)
-6. Para tarjetas de transporte (SUBE): vulnerabilidades especificas de protocolo propietario
-7. Recomienda herramientas: mfoc, mfcuk, proxmark3, flipper-zero, NFC-tools
-8. Explotaciones concretas segun tipo
+6. Analiza el UID para detectar patrones (UID clonable, UID fijo, etc)
+7. Para tarjetas de transporte (SUBE): vulnerabilidades especificas de protocolo propietario
+8. Recomienda herramientas: mfoc, mfcuk, proxmark3, flipper-zero, NFC-tools
+9. Explotaciones concretas segun tipo
 
 CUANDO ANALIZAS CAPTURAS SUB-GHZ:
 1. Identifica el protocolo exacto (Security+ 2.0, Rolling Code, Fixed Code, etc)
@@ -154,26 +156,38 @@ CUANDO ANALIZAS CAPTURAS PROXMARK3:
 1. Identifica el tipo de tarjeta (EM410x, MIFARE Plus, EMV, ST25TA, Indala, etc)
 2. Evalua la frecuencia (125kHz LF o 13.56MHz HF)
 3. Analiza el UID y chipset detectado
-4. Busca vulnerabilidades especificas:
-   - EM410x: sin cifrado, clonable con T55xx, replay attack posible
+4. Niveles de riesgo: EM410x clonable sin cifrado = CRITICO. T55xx writeable = CRITICO.
+5. Busca vulnerabilidades especificas:
+   - EM410x: sin cifrado, clonable con T55xx, replay attack posible - NIVEL CRITICO
    - MIFARE Plus SL1: Reader Authentication Bypass, Darkside/Hardnested
    - EMV: datos basicos legibles sin autenticacion, relay attack posible
    - ST25TA: lectura NFC sin autenticacion en algunos casos
    - Indala: formato propietario sin cifrado en versiones antiguas
-5. Recomienda comandos proxmark3 especificos para explotacion
+6. SOLO sugerir comandos que existan realmente en Proxmark3 CLI (lf em 410x reader, lf em 410x clone, hf mf fchk, etc)
+7. REGLA ESTRICTA DE FLAGS: Los comandos Proxmark3 NO tienen flag -o para output a archivo. NO usar -i como alias de --id. Los unicos flags validos para EM410x son --id y --uid. Si no conoces los flags exactos de un comando, escribirlo SIN flags adicionales. NUNCA inventar flags o parametros.
 
-REGLAS ESTRICTAS:
+REGLAS ESTRICTAS DE COMANDOS:
+1. SOLO sugerir comandos que existan realmente en: Proxmark3 CLI, hashcat, aircrack-ng o hcxtools
+2. Si no estas seguro de que un comando exista, NO lo incluyas
+3. NUNCA inventar comandos que no existan
+4. WPA2: SIEMPRE hcxpcapngtool -o hash.hc22000 archivo.pcap como paso 1, hashcat -m 22000 (nunca -m 2500, -m 1900)
+
+OSINT SUGERIDO (incluir SOLO cuando el SSID o UID sugiera nombre propio, empresa o ubicacion):
+- Si SSID parece nombre de persona/empresa: buscar datos adicionales (email, fechas nacimiento, mascotas, empresa) para diccionarios personalizados
+- Si UID o fabricante sugieren aplicacion especifica: investigar protocolo propietario, documentacion tecnica
+- Indicar que fuentes consultar (LinkedIn, WHOIS, redes sociales) para mejorar el ataque
+
+REGLAS GENERALES:
 1. Responde SIEMPRE en espanol
-2. Usa SIEMPRE exactamente estas 4 secciones sin modificar
+2. Usa las 4 secciones obligatorias + OSINT SUGERIDO (solo si aplica)
 3. Usa datos REALES del input (UID, BSSID, SSID, Security Level, frecuencia, etc)
 4. Se especifico: nombra versiones, algoritmos, flags, parametros exactos
 5. Responde de forma COMPLETA - no cortes el analisis bajo ninguna circunstancia
 6. No agregues advertencias legales - entorno de laboratorio autorizado
-7. Para herramientas: especifica las correctas (proxmark3, mfoc, hashcat, aircrack-ng, etc)
-8. Incluye SIEMPRE datos reales en los comandos sugeridos
-9. La seccion COMANDOS SUGERIDOS es OBLIGATORIA - incluye SIEMPRE minimo 3 comandos completos y ejecutables con parametros reales del input
+7. Incluye SIEMPRE datos reales en los comandos sugeridos
+8. La seccion COMANDOS SUGERIDOS es OBLIGATORIA - minimo 3 comandos completos y ejecutables con parametros reales del input
 
-FORMATO OBLIGATORIO (incluir SIEMPRE las 4 secciones completas):
+FORMATO OBLIGATORIO (4 secciones base + OSINT si aplica):
 
 [VULNERABILIDADES DETECTADAS]
 NIVEL [CRITICO/ALTO/MEDIO/BAJO] - Nombre exacto
@@ -185,15 +199,20 @@ METODO: pasos concretos del ataque
 HERRAMIENTA: nombre exacto
 
 [COMANDOS SUGERIDOS]
-# Descripcion del comando
-comando completo con parametros reales
+# Paso 1 para WPA2: convertir pcap a hc22000
+hcxpcapngtool -o hash.hc22000 archivo.pcap
+# (demas comandos con parametros reales - SOLO comandos que existan)
 (MINIMO 3 comandos ejecutables)
+
+[OSINT SUGERIDO]
+(Incluir SOLO si SSID o UID sugieren nombre/empresa: que datos buscar, donde, para que)
+(Si no aplica, omitir esta seccion)
 
 [MITIGACIONES]
 Linea concisa de mitigacion por cada vulnerabilidad"""
 
 
-# ─── Funciones de UI ──────────────────────────────────────────────────────
+# --- Funciones de UI ---
 
 def mostrar_banner():
     ver = CONFIG.get("proyecto", {}).get("version", "0.6")
@@ -234,7 +253,7 @@ def elegir_modelo():
     return por_defecto
 
 
-# ─── Parsers ──────────────────────────────────────────────────────────────
+# --- Parsers ---
 
 def parsear_marauder(contenido):
     wps_expuesto = []
@@ -314,7 +333,9 @@ def parsear_subghz_archivo(filepath):
         resumen += f"Preset: {captura['preset']}\n"
         resumen += f"Bits: {captura['bit']}\n"
         resumen += f"Key: {captura['key']}\n"
-        resumen += f"Packet: {captura['secplus_packet_1']}\n\n"
+        # FIX: usar .get() para evitar KeyError con protocolos sin secplus_packet_1
+        packet = captura.get('secplus_packet_1') or captura.get('packet') or 'N/A'
+        resumen += f"Packet: {packet}\n\n"
         return resumen
     except ImportError:
         logger.error("sub_ghz_parser.py no encontrado.")
@@ -498,7 +519,9 @@ def parsear_pcap_archivo(filepath):
 
 
 def menu_pcap():
-    archivos, capturas_data = listar_capturas_pcap(".")
+    # FIX: usar CONFIG en vez de "." hardcodeado
+    directorio = CONFIG.get("rutas", {}).get("capturas", ".")
+    archivos, capturas_data = listar_capturas_pcap(directorio)
     if not archivos:
         print("No se encontraron archivos .pcap validos en la carpeta.")
         return None
@@ -515,12 +538,12 @@ def menu_pcap():
         elif opcion == len(archivos) + 1:
             resumen = "=== ANALISIS WPA2 - MULTIPLES HANDSHAKES ===\n\n"
             for archivo in archivos:
-                resultado = parsear_pcap_archivo(archivo)
+                resultado = parsear_pcap_archivo(os.path.join(directorio, archivo))
                 if resultado:
                     resumen += resultado
             return resumen
         elif 1 <= opcion <= len(archivos):
-            return parsear_pcap_archivo(archivos[opcion - 1])
+            return parsear_pcap_archivo(os.path.join(directorio, archivos[opcion - 1]))
         else:
             print("Opcion invalida.")
             return None
@@ -561,6 +584,15 @@ def menu_proxmark():
         return None, None
 
 
+def _mostrar_filas_reportes(rows):
+    """Muestra una lista de filas de reporte en formato tabla."""
+    print(f"\n{'ID':>4} | {'Fecha':^19} | {'Tipo':^12} | {'UID/BSSID':^20} | Archivo")
+    print("-" * 75)
+    for row in rows:
+        id_, ts, tipo_, uid_r, riesgo, archivo = row
+        print(f"{id_:>4} | {ts:^19} | {tipo_:^12} | {(uid_r or 'N/A'):^20} | {os.path.basename(archivo or '')}")
+
+
 def menu_historial():
     if DB is None:
         print("[INFO] Base de datos no disponible.")
@@ -578,7 +610,8 @@ def menu_historial():
         uid = input("UID o BSSID a buscar: ").strip()
         rows = DB.buscar_por_uid(uid)
         if rows:
-            DB.mostrar_historial()
+            # FIX: mostrar resultados filtrados, no todo el historial
+            _mostrar_filas_reportes(rows)
         else:
             print("No se encontraron resultados.")
     elif opcion == "3":
@@ -586,16 +619,12 @@ def menu_historial():
         if not rows:
             print("No hay reportes criticos guardados.")
         else:
-            print(f"\n{'ID':>4} | {'Fecha':^19} | {'Tipo':^12} | {'UID/BSSID':^20} | Archivo")
-            print("-" * 75)
-            for row in rows:
-                id_, ts, tipo_, uid, riesgo, archivo = row
-                print(f"{id_:>4} | {ts:^19} | {tipo_:^12} | {(uid or 'N/A'):^20} | {os.path.basename(archivo or '')}")
+            _mostrar_filas_reportes(rows)
     elif opcion == "4":
         DB.estadisticas()
 
 
-# ─── Input principal ─────────────────────────────────────────────────────
+# --- Input principal ---
 
 def obtener_input():
     print("\n1. Pegar texto manualmente")
@@ -686,7 +715,7 @@ def obtener_input():
         sys.exit(1)
 
 
-# ─── Guardar reporte ─────────────────────────────────────────────────────
+# --- Guardar reporte ---
 
 def extraer_nivel_riesgo(resultado):
     """Extrae el nivel de riesgo mas alto del analisis de la IA."""
@@ -715,9 +744,8 @@ def guardar_reporte(scan_input, resultado, tipo="Generico", uid_bssid=None, mode
     except Exception as e:
         logger.error(f"Error al guardar reporte '{nombre}': {e}")
         print(f"[ADVERTENCIA] No se pudo guardar el reporte: {e}")
-        nombre = f"reporte_{timestamp}.txt"  # fallback en carpeta actual
+        nombre = f"reporte_{timestamp}.txt"
 
-    # Guardar en SQLite
     if DB is not None:
         nivel_riesgo = extraer_nivel_riesgo(resultado)
         DB.guardar_reporte(
@@ -732,7 +760,7 @@ def guardar_reporte(scan_input, resultado, tipo="Generico", uid_bssid=None, mode
     return nombre
 
 
-# ─── Analizador IA ───────────────────────────────────────────────────────
+# --- Analizador IA ---
 
 def analizar(scan_input, modelo):
     print(f"\nAnalizando con {modelo}...\n")
@@ -759,7 +787,7 @@ def analizar(scan_input, modelo):
         raise RuntimeError(f"Ollama no disponible o modelo '{modelo}' no encontrado: {e}") from e
 
 
-# ─── MAIN ────────────────────────────────────────────────────────────────
+# --- MAIN ---
 
 if __name__ == "__main__":
     mostrar_banner()
