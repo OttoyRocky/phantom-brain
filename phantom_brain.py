@@ -165,11 +165,13 @@ ANALISIS SUB-GHZ - REGLAS:
 
 ANALISIS NFC - REGLAS:
 - Identifica estandar exacto (ISO14443-3A, ISO14443-4A, ISO15693, FeliCa)
-- Tipo de tarjeta: Mifare Classic, Mifare Plus SL0/SL1/SL2/SL3, DESFire, NTAG
+- Tipo de tarjeta: Mifare Classic, Mifare Plus SL0/SL1/SL2/SL3, DESFire, NTAG, EMV
 - Mifare Classic: CRITICO (Darkside/Hardnested attack)
 - NTAG sin proteccion: ALTO (lectura completa posible)
 - Mifare DESFire: MEDIO (relay attack posible)
-- Comandos validos: mfoc, mfcuk, nfc-list, nfc-mfclassic""",
+- EMV (tarjeta de debito/credito): ALTO - datos del titular legibles sin autenticacion (PAN, vencimiento, AID). Vulnerable a relay attack y skimming NFC.
+- Si hay datos EMV (PAN, AID, vencimiento): mencionar riesgo de clonacion y relay attack
+- Comandos validos: mfoc, mfcuk, nfc-list, nfc-mfclassic, proxmark3 hf emv scan""",
 
     "Proxmark3": _PROMPT_BASE + """
 
@@ -408,7 +410,18 @@ def parsear_nfc_archivo(filepath):
         resumen += f"Archivo: {captura.get('filename', 'N/A')}\n"
         resumen += f"Tipo: {captura.get('device_type', 'N/A')}\n"
         resumen += f"UID: {captura.get('uid', 'N/A')}\n"
-        resumen += f"Fabricante: {captura.get('manufacturer', 'N/A')}\n\n"
+        resumen += f"Fabricante: {captura.get('manufacturer', 'N/A')}\n"
+        resumen += f"ATQA: {captura.get('atqa', 'N/A')}\n"
+        resumen += f"SAK: {captura.get('sak', 'N/A')}\n"
+        if captura.get('emv_app_name'):
+            resumen += f"\n[DATOS EMV]\n"
+            resumen += f"Red/App: {captura.get('emv_app_name')} ({captura.get('emv_app_label', 'N/A')})\n"
+            resumen += f"AID: {captura.get('emv_aid', 'N/A')}\n"
+            resumen += f"PAN: {captura.get('emv_pan', 'N/A')}\n"
+            resumen += f"Vencimiento: {captura.get('emv_exp_month', '??')}/{captura.get('emv_exp_year', '??')}\n"
+            resumen += f"AIP: {captura.get('emv_aip', 'N/A')}\n"
+            resumen += f"PIN counter: {captura.get('emv_pin_counter', 'N/A')}\n"
+        resumen += "\n"
         return resumen
     except ImportError:
         logger.error("nfc_parser.py no encontrado.")
