@@ -186,11 +186,7 @@ ANALISIS PROXMARK3 - REGLAS:
 
     "WiFi-Marauder": _PROMPT_BASE + """
 
-ANALISIS WIFI MARAUDER - REGLAS:
-- Identifica redes con WPS expuesto (CRITICO), redes ocultas (ALTO)
-- WPS expuesto: vulnerable a Pixie Dust y fuerza bruta PIN
-- Comandos validos: wash, reaver, bully, airodump-ng, aircrack-ng
-- Usa datos reales del input: ESSID, BSSID, canal, RSSI""",
+Para este analisis de log WiFi Marauder: las redes con WPS expuesto tienen nivel CRITICO porque son vulnerables a Pixie Dust y fuerza bruta PIN. Las redes ocultas tienen nivel ALTO. Usa los datos reales del input: ESSID, BSSID, canal, RSSI. Comandos validos: wash, reaver, bully, airodump-ng, aircrack-ng. Incluye comandos con los BSSID reales del input.""",
 
     "Manual": _PROMPT_BASE + """
 
