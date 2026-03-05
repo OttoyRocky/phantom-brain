@@ -45,7 +45,7 @@ CONFIG_DEFAULT = {
         {"nombre": "mistral:7b-instruct", "descripcion": "Completo, recomendado"},
         {"nombre": "deepseek-r1:7b", "descripcion": "Especializado en ciberseguridad"},
     ],
-    "modelo_por_defecto": "deepseek-r1:7b",
+    "modelo_por_defecto": "mistral:7b-instruct",
     "ia": {"num_predict": 3000, "temperatura": 0.7},
     "base_de_datos": {"archivo": "phantom_brain.db", "guardar_reportes": True},
     "logging": {"nivel": "INFO", "archivo": "phantom_brain.log", "consola": True},
@@ -235,7 +235,7 @@ def mostrar_banner():
 
 def elegir_modelo():
     modelos = CONFIG.get("modelos", CONFIG_DEFAULT["modelos"])
-    por_defecto = CONFIG.get("modelo_por_defecto", "deepseek-r1:7b")
+    por_defecto = CONFIG.get("modelo_por_defecto", "mistral:7b-instruct")
 
     print("Modelos disponibles:")
     for i, m in enumerate(modelos, 1):
