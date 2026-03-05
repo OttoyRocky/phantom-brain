@@ -52,10 +52,10 @@ class PCAPParserV2:
             if eapol_count >= 4:
                 self.data['handshake_complete'] = True
                 self.data['vulnerabilities'].append({
-                    'nivel': 'ALTO',
+                    'nivel': 'CRITICO',
                     'nombre': 'Handshake WPA2 Capturado',
                     'descripcion': (
-                        f'{eapol_count} frames EAPOL. Listo para crackeo.\n'
+                        f'{eapol_count} frames EAPOL. Listo para crackeo offline sin limite de intentos.\n'
                         f'  hcxpcapngtool -o hash.hc22000 {self.data["filename"]}\n'
                         f'  hashcat -m 22000 hash.hc22000 rockyou.txt\n'
                         f'  aircrack-ng -w rockyou.txt -b {self.data["bssid"]} {self.data["filename"]}'
@@ -64,10 +64,10 @@ class PCAPParserV2:
 
             if self.data['pmkid_found']:
                 self.data['vulnerabilities'].append({
-                    'nivel': 'ALTO',
+                    'nivel': 'CRITICO',
                     'nombre': 'PMKID Capturado',
                     'descripcion': (
-                        f'PMKID extraido. No requiere cliente conectado.\n'
+                        f'PMKID extraido. No requiere cliente conectado. Crackeo offline posible.\n'
                         f'  Hash: {self.data["pmkid_hash"]}\n'
                         f'  echo "{self.data["pmkid_hash"]}" > hash.hc22000\n'
                         f'  hashcat -m 22000 hash.hc22000 rockyou.txt'
