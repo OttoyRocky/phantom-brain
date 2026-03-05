@@ -1,7 +1,11 @@
 """
-PHANTOM BRAIN v0.6
+PHANTOM BRAIN v0.7
 Analizador offline de pentesting con IA
 WiFi + Sub-GHz + NFC + WPA2 + Proxmark3
+
+Mejoras v0.7:
+- Fix SYSTEM_PROMPT: wiegand decode usa -p (no --raw)
+- Modelo por defecto cambiado a deepseek-r1:7b
 
 Mejoras v0.6:
 - config.yaml centralizado (rutas, modelos, puertos COM)
@@ -34,14 +38,14 @@ except ImportError:
 
 # --- Configuracion por defecto (se sobreescribe con config.yaml) ---
 CONFIG_DEFAULT = {
-    "proyecto": {"nombre": "PHANTOM BRAIN", "version": "0.6"},
+    "proyecto": {"nombre": "PHANTOM BRAIN", "version": "0.7"},
     "rutas": {"capturas": ".", "reportes": "reportes"},
     "modelos": [
         {"nombre": "phi3:mini", "descripcion": "Rapido, respuestas cortas"},
         {"nombre": "mistral:7b-instruct", "descripcion": "Completo, recomendado"},
         {"nombre": "deepseek-r1:7b", "descripcion": "Especializado en ciberseguridad"},
     ],
-    "modelo_por_defecto": "mistral:7b-instruct",
+    "modelo_por_defecto": "deepseek-r1:7b",
     "ia": {"num_predict": 3000, "temperatura": 0.7},
     "base_de_datos": {"archivo": "phantom_brain.db", "guardar_reportes": True},
     "logging": {"nivel": "INFO", "archivo": "phantom_brain.log", "consola": True},
@@ -165,6 +169,7 @@ CUANDO ANALIZAS CAPTURAS PROXMARK3:
    - Indala: formato propietario sin cifrado en versiones antiguas
 6. SOLO sugerir comandos que existan realmente en Proxmark3 CLI (lf em 410x reader, lf em 410x clone, hf mf fchk, etc)
 7. REGLA ESTRICTA DE FLAGS: Los comandos Proxmark3 NO tienen flag -o para output a archivo. NO usar -i como alias de --id. Los unicos flags validos para EM410x son --id y --uid. Si no conoces los flags exactos de un comando, escribirlo SIN flags adicionales. NUNCA inventar flags o parametros.
+8. WIEGAND DECODE - REGLA OBLIGATORIA: El flag correcto es -p para especificar el protocolo. NUNCA usar --raw. Ejemplo correcto: lf wiegand decode -p H10301
 
 REGLAS ESTRICTAS DE COMANDOS:
 1. SOLO sugerir comandos que existan realmente en: Proxmark3 CLI, hashcat, aircrack-ng o hcxtools
@@ -215,7 +220,7 @@ Linea concisa de mitigacion por cada vulnerabilidad"""
 # --- Funciones de UI ---
 
 def mostrar_banner():
-    ver = CONFIG.get("proyecto", {}).get("version", "0.6")
+    ver = CONFIG.get("proyecto", {}).get("version", "0.7")
     print("=" * 55)
     print(f"        PHANTOM BRAIN v{ver}")
     print("    Analizador offline de pentesting con IA")
@@ -226,7 +231,7 @@ def mostrar_banner():
 
 def elegir_modelo():
     modelos = CONFIG.get("modelos", CONFIG_DEFAULT["modelos"])
-    por_defecto = CONFIG.get("modelo_por_defecto", "mistral:7b-instruct")
+    por_defecto = CONFIG.get("modelo_por_defecto", "deepseek-r1:7b")
 
     print("Modelos disponibles:")
     for i, m in enumerate(modelos, 1):
@@ -731,7 +736,7 @@ def guardar_reporte(scan_input, resultado, tipo="Generico", uid_bssid=None, mode
     try:
         with open(nombre, "w", encoding="utf-8") as f:
             f.write("PHANTOM BRAIN - Reporte de Analisis\n")
-            f.write(f"Version: {CONFIG.get('proyecto', {}).get('version', '0.6')}\n")
+            f.write(f"Version: {CONFIG.get('proyecto', {}).get('version', '0.7')}\n")
             f.write(f"Fecha: {timestamp}\n")
             f.write(f"Tipo: {tipo}\n")
             f.write(f"Modelo IA: {modelo}\n")
