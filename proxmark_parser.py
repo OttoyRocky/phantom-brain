@@ -32,15 +32,16 @@ class ProxmarkParser:
                 'UID fijo y predecible - replay attack posible',
                 'Compatible con multiples formatos de control de acceso'
             ]
+            uid_val = self.data["uid"] if self.data["uid"] else "0A00244697"
             self.data['comandos'] = [
                 '# Leer informacion completa de la tarjeta EM410x',
-                f'lf em 410x reader',
+                'lf em 410x reader',
                 '',
                 '# Clonar UID en tarjeta T55xx en blanco',
-                f'lf em 410x clone --id {self.data["uid"] if self.data["uid"] else "0A00244697"}',
+                f'lf em 410x clone --id {uid_val}',
                 '',
                 '# Simular la tarjeta (emulacion)',
-                f'lf em 410x sim --id {self.data["uid"] if self.data["uid"] else "0A00244697"}',
+                f'lf em 410x sim --id {uid_val}',
                 '',
                 '# Analizar chipset T55xx detectado',
                 'lf t55xx info',
@@ -48,8 +49,8 @@ class ProxmarkParser:
                 '# Detectar configuracion del T55xx',
                 'lf t55xx detect',
                 '',
-                '# Decodificar formato Wiegand del UID',
-                f'wiegand decode --raw {self.data["uid"] if self.data["uid"] else "0A00244697"}',
+                '# Decodificar formato Wiegand del UID (flag -p obligatorio)',
+                'lf wiegand decode -p H10301',
                 '',
                 '# Dump completo de la tarjeta',
                 'lf t55xx dump',
@@ -76,9 +77,6 @@ class ProxmarkParser:
                 '# Informacion completa de la tarjeta MIFARE Plus',
                 'hf mfp info',
                 '',
-                '# Leer tag MIFARE Plus como NFC',
-                'nfc mf pread',
-                '',
                 '# Intentar autenticacion con claves por defecto',
                 'hf mf chk --1k -f mfc_default_keys.dic',
                 '',
@@ -99,7 +97,7 @@ class ProxmarkParser:
             self.data['type'] = 'ST25TA'
             self.data['frequency'] = '13.56MHz'
             self.data['protocol'] = 'ISO14443-A'
-            uid = re.search(r'UID:\s+([0-9A-F\s]+)\(', self.raw)
+            uid = re.search(r'UID:\s+([0-9A-F\s]+)', self.raw)
             self.data['uid'] = uid.group(1).strip() if uid else None
             self.data['manufacturer'] = 'ST Microelectronics France'
             self.data['vulnerabilities'] = [
@@ -111,27 +109,24 @@ class ProxmarkParser:
                 '# Informacion completa ST25TA',
                 'hf st25ta info',
                 '',
-                '# Leer como NFC Type 4A',
-                'nfc type4a st25taread',
-                '',
-                '# Leer registros NDEF',
-                'nfc type4a read',
+                '# Informacion ISO14443-A',
+                'hf 14a info',
                 '',
                 '# Busqueda general HF',
                 'hf search',
                 '',
-                '# Informacion ISO14443-A',
-                'hf 14a info',
-                '',
-                '# Raw APDU para explorar estructura',
+                '# Raw APDU - seleccionar aplicacion NDEF',
                 'hf 14a raw -s -c 00A4040007D276000085010100',
+                '',
+                '# Raw APDU - leer capacidad NDEF',
+                'hf 14a raw -c 00A4000002E103',
             ]
 
         elif 'EMV' in self.raw:
             self.data['type'] = 'EMV'
             self.data['frequency'] = '13.56MHz'
             self.data['protocol'] = 'ISO14443-A'
-            uid = re.search(r'UID:\s+([0-9A-F\s]+)\(', self.raw)
+            uid = re.search(r'UID:\s+([0-9A-F\s]+)', self.raw)
             self.data['uid'] = uid.group(1).strip() if uid else None
             fingerprint = re.findall(r'\[\+\]\s+(.+(?:Bank|Visa|Mastercard|card|bPay|BPP).+)', self.raw)
             self.data['fingerprint'] = fingerprint if fingerprint else []
@@ -143,22 +138,13 @@ class ProxmarkParser:
             ]
             self.data['comandos'] = [
                 '# Leer tarjeta EMV completa',
-                'emv reader',
+                'hf emv reader',
                 '',
-                '# Escaneo EMV detallado',
-                'emv scan -a -t -v',
+                '# Escaneo EMV detallado con todos los registros',
+                'hf emv scan -a -t -v',
                 '',
-                '# Extraer datos del chip',
-                'emv extract',
-                '',
-                '# Leer como smart card ISO7816',
-                'smart reader',
-                '',
-                '# Informacion del chip',
-                'smart info',
-                '',
-                '# Fuerza bruta de SFI (Service File Identifier)',
-                'smart brute',
+                '# Informacion ISO14443-A del chip',
+                'hf 14a info',
                 '',
                 '# Raw APDU - seleccionar aplicacion Visa',
                 'hf 14a raw -s -c 00A4040007A0000000031010',
