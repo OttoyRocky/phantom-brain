@@ -36,6 +36,13 @@ except ImportError:
     print("[ERROR] Ollama no esta instalado. Ejecuta: pip install ollama")
     sys.exit(1)
 
+# --- Intentar cargar ExploitGuide ---
+try:
+    from exploit_guide import ExploitGuide
+    EXPLOIT_GUIDE_DISPONIBLE = True
+except ImportError:
+    EXPLOIT_GUIDE_DISPONIBLE = False
+
 # --- Configuracion por defecto (se sobreescribe con config.yaml) ---
 CONFIG_DEFAULT = {
     "proyecto": {"nombre": "PHANTOM BRAIN", "version": "0.7"},
@@ -633,6 +640,52 @@ def menu_historial():
         DB.estadisticas()
 
 
+# --- Menu Guias de Explotacion (opcion 9) ---
+
+def _menu_exploit_guide():
+    """Menu directo para guias de explotacion sin pasar por analisis IA."""
+    print("\n" + "=" * 55)
+    print("   GUIAS DE EXPLOTACION - PHANTOM BRAIN")
+    print("=" * 55)
+    print("\nTipo de captura:")
+    tipos = ["WPA2", "Sub-GHz", "NFC", "Proxmark3", "WiFi-Marauder"]
+    for i, t in enumerate(tipos, 1):
+        print(f"{i}. {t}")
+    print("0. Volver")
+
+    try:
+        opcion = input("\nSelecciona tipo (0-5): ").strip()
+        if opcion == "0":
+            return
+        idx = int(opcion) - 1
+        if not (0 <= idx < len(tipos)):
+            print("Opcion invalida.")
+            return
+        tipo = tipos[idx]
+    except (ValueError, KeyboardInterrupt):
+        print("Opcion invalida.")
+        return
+
+    print(f"\nPega el output o datos del analisis previo para generar la guia {tipo}:")
+    print("(Pega el texto y presiona Enter dos veces para continuar)")
+    lineas = []
+    try:
+        while True:
+            linea = input()
+            if linea == "" and lineas and lineas[-1] == "":
+                break
+            lineas.append(linea)
+    except (KeyboardInterrupt, EOFError):
+        pass
+
+    datos = "\n".join(lineas).strip()
+    if not datos:
+        print("[INFO] No se ingresaron datos. Generando guia con valores por defecto.")
+
+    guia = ExploitGuide(tipo, datos)
+    print(guia.generar_guia())
+
+
 # --- Input principal ---
 
 def obtener_input():
@@ -644,7 +697,8 @@ def obtener_input():
     print("6. Analizar capturas WPA2 Handshakes (.pcap)")
     print("7. Analizar captura Proxmark3 (pegar output directo)")
     print("8. Ver historial de reportes")
-    opcion = input("\nElegi una opcion (1-8): ").strip()
+    print("9. Guias de explotacion (sin analisis IA)")
+    opcion = input("\nElegi una opcion (1-9): ").strip()
 
     if opcion == "1":
         return input("\nPega el output aqui:\n> "), False, "Manual", None
@@ -717,6 +771,13 @@ def obtener_input():
 
     elif opcion == "8":
         menu_historial()
+        sys.exit(0)
+
+    elif opcion == "9":
+        if not EXPLOIT_GUIDE_DISPONIBLE:
+            print("[ERROR] exploit_guide.py no encontrado en la carpeta del proyecto.")
+            sys.exit(1)
+        _menu_exploit_guide()
         sys.exit(0)
 
     else:
