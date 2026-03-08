@@ -838,17 +838,31 @@ def analizar(scan_input, modelo, tipo_captura="Generico"):
         ia_cfg = CONFIG.get("ia", {})
         num_predict = ia_cfg.get("num_predict", 3000)
         temperatura = ia_cfg.get("temperatura", 0.7)
+        timeout = ia_cfg.get("timeout", 180)
         prompt = obtener_prompt(tipo_captura)
-        response = ollama.chat(
+
+        import ollama as _ollama_mod
+        client = _ollama_mod.Client(timeout=timeout)
+
+        respuesta_completa = []
+        print("", end="", flush=True)
+        stream = client.chat(
             model=modelo,
             options={"num_predict": num_predict, "temperature": temperatura},
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": scan_input}
-            ]
+            ],
+            stream=True
         )
+        for chunk in stream:
+            token = chunk['message']['content']
+            print(token, end="", flush=True)
+            respuesta_completa.append(token)
+        print()  # salto de linea al terminar
+
         logger.info(f"Analisis completado con modelo: {modelo}, tipo: {tipo_captura}")
-        return response['message']['content']
+        return "".join(respuesta_completa)
     except Exception as e:
         logger.error(f"Error al analizar con Ollama ({modelo}): {e}")
         print(f"\n[ERROR] No se pudo conectar con Ollama o el modelo '{modelo}' no esta disponible.")
