@@ -889,7 +889,7 @@ if __name__ == "__main__":
     except RuntimeError as e:
         print(f"\n[ERROR] {e}")
         sys.exit(1)
-    print(resultado)
+    # resultado ya impreso via streaming
     uid_bssid = None
     if datos_extra and isinstance(datos_extra, dict):
         uid_bssid = datos_extra.get("uid") or datos_extra.get("raw_id")
