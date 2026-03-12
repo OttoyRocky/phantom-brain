@@ -918,16 +918,14 @@ def menu_captura_vivo():
     except Exception as e:
         print(f"[WARN] hcxpcapngtool fallo: {e}")
 
-    # --- PASO 9: Parsear para analisis IA ---
-    print("\n[7] Analizando captura con IA...")
-    try:
-        from pcap_parser_v2 import PCAPParserV2
-        parser = PCAPParserV2(archivo_cap)
-        if parser.data and parser.data.get("total_packets", 0) > 0:
-            resumen = f"EAPOL: {len(parser.data.get('eapol_frames', []))} frames. Handshake: {parser.data.get('handshake_complete', False)}. PMKID: {parser.data.get('pmkid_found', False)}"
-            return resumen, False, "WPA2", None
-    except Exception as e:
-        print(f"[WARN] Parser automatico fallo: {e}")
+    # --- CLEANUP procesos ---
+    for proc_name in ["airodump-ng", "aireplay-ng"]:
+        subprocess.run(["sudo", "pkill", "-f", proc_name], capture_output=True)
+    # --- PASO 9: IA solo si hay hash ---
+    if not (os.path.exists(archivo_hash) and os.path.getsize(archivo_hash) > 0):
+        print("[INFO] Sin handshake capturado - omitiendo analisis IA para preservar recursos.")
+        return None
+    print("\n[7] Analizando captura con IA (phi3:mini)...")
 
     contenido = f"""=== CAPTURA EN VIVO WPA2 ===
 ESSID: {objetivo['essid']}
