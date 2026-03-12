@@ -852,6 +852,11 @@ def menu_captura_vivo():
             ], capture_output=True)
             print("[OK] Deauth enviado. Esperando reconexion y handshake...")
 
+        for i in range(120, 0, -5):
+            print(f"    Esperando handshake... {i}s restantes", end="\r")
+            time.sleep(5)
+        print()
+        proc_cap.terminate()
         proc_cap.wait()
 
     except KeyboardInterrupt:
