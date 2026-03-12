@@ -902,10 +902,11 @@ def menu_captura_vivo():
     # --- PASO 9: Parsear para analisis IA ---
     print("\n[7] Analizando captura con IA...")
     try:
-        from pcap_parser_v2 import parsear_pcap
-        resultado_parse = parsear_pcap(archivo_cap)
-        if resultado_parse:
-            return resultado_parse, False, "WPA2", None
+        from pcap_parser_v2 import PCAPParserV2
+        parser = PCAPParserV2(archivo_cap)
+        if parser.data and parser.data.get("total_packets", 0) > 0:
+            resumen = f"EAPOL: {len(parser.data.get('eapol_frames', []))} frames. Handshake: {parser.data.get('handshake_complete', False)}. PMKID: {parser.data.get('pmkid_found', False)}"
+            return resumen, False, "WPA2", None
     except Exception as e:
         print(f"[WARN] Parser automatico fallo: {e}")
 
