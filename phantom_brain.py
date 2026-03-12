@@ -761,27 +761,44 @@ def menu_captura_vivo():
             with open(archivo_csv, "r", encoding="utf-8", errors="ignore") as f:
                 lineas = f.readlines()
 
+            clientes_por_bssid = {}
+            seccion_clientes = False
             for linea in lineas:
                 linea = linea.strip()
-                if not linea or linea.startswith("BSSID") or linea.startswith("Station"):
+                if not linea:
+                    continue
+                if linea.startswith("Station MAC"):
+                    seccion_clientes = True
+                    continue
+                if linea.startswith("BSSID"):
+                    seccion_clientes = False
                     continue
                 if "," in linea:
                     partes = [p.strip() for p in linea.split(",")]
-                    if len(partes) >= 14 and len(partes[0]) == 17:
-                        bssid = partes[0]
-                        canal = partes[3].strip()
-                        potencia = partes[8].strip()
-                        privacidad = partes[5].strip()
-                        essid = partes[13].strip() if len(partes) > 13 else "<oculto>"
-                        if not essid:
-                            essid = "<oculto>"
-                        redes.append({
-                            "bssid": bssid,
-                            "canal": canal,
-                            "potencia": potencia,
-                            "privacidad": privacidad,
-                            "essid": essid
-                        })
+                    if seccion_clientes:
+                        if len(partes) >= 6 and len(partes[0]) == 17:
+                            bssid_ap = partes[5].strip()
+                            if bssid_ap and bssid_ap != "(not associated)":
+                                clientes_por_bssid[bssid_ap] = clientes_por_bssid.get(bssid_ap, 0) + 1
+                    else:
+                        if len(partes) >= 14 and len(partes[0]) == 17:
+                            bssid = partes[0]
+                            canal = partes[3].strip()
+                            potencia = partes[8].strip()
+                            privacidad = partes[5].strip()
+                            essid = partes[13].strip() if len(partes) > 13 else "<oculto>"
+                            if not essid:
+                                essid = "<oculto>"
+                            redes.append({
+                                "bssid": bssid,
+                                "canal": canal,
+                                "potencia": potencia,
+                                "privacidad": privacidad,
+                                "essid": essid,
+                                "clientes": 0
+                            })
+            for red in redes:
+                red["clientes"] = clientes_por_bssid.get(red["bssid"], 0)
         except Exception as e:
             print(f"[WARN] Error parseando CSV: {e}")
 
@@ -790,10 +807,12 @@ def menu_captura_vivo():
         return None
 
     print(f"\n[2] Redes detectadas ({len(redes)}):")
-    print(f"\n{'#':<4} {'ESSID':<25} {'BSSID':<19} {'CH':<5} {'PWR':<6} {'ENC'}")
-    print("-" * 70)
+    print(f"\n{'#':<4} {'ESSID':<25} {'BSSID':<19} {'CH':<5} {'PWR':<6} {'ENC':<15} {'CLI'}")
+    print("-" * 82)
     for i, red in enumerate(redes, 1):
-        print(f"{i:<4} {red['essid']:<25} {red['bssid']:<19} {red['canal']:<5} {red['potencia']:<6} {red['privacidad']}")
+        cli = red.get('clientes', 0)
+        cli_str = f"[{cli}]" if cli > 0 else "-"
+        print(f"{i:<4} {red['essid']:<25} {red['bssid']:<19} {red['canal']:<5} {red['potencia']:<6} {red['privacidad']:<15} {cli_str}")
 
     # --- PASO 4: Seleccion de objetivo ---
     print()
