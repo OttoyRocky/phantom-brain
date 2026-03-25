@@ -1147,6 +1147,11 @@ if __name__ == "__main__":
     if scan_input is None:
         print("[INFO] No se pudo obtener input. Saliendo.")
         sys.exit(1)
+    # FORZAR phi3:mini para Option 10 (captura en vivo) - proteger CPU de la Pi
+    if tipo_captura == "WPA2" and "CAPTURA EN VIVO" in str(scan_input):
+        modelo = "phi3:mini"
+        print("[INFO] Captura en vivo detectada - forzando phi3:mini para proteger recursos de la Pi.")
+
     try:
         resultado = analizar(scan_input, modelo, tipo_captura)
     except RuntimeError as e:
