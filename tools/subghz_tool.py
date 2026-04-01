@@ -21,9 +21,20 @@ class SubGHzTool(BaseTool):
             parser = SubGhzParser(input_data)
             data = parser.get_data()
             resumen = f"Protocolo: {data.get('protocol')}\nFrecuencia: {data.get('frequency')} Hz\nKey: {data.get('key')}\nBits: {data.get('bit')}"
+            protocolo = str(data.get("protocol", "")).lower()
+            if "fixed" in protocolo:
+                risk = "CRITICO"
+            elif "rolling" in protocolo or "security" in protocolo:
+                risk = "ALTO"
+            else:
+                risk = "MEDIO"
+            findings = [f"Protocolo: {data.get('protocol')} - Key: {data.get('key')}"]
+
             return ToolResult(
                 success=True,
                 content=resumen,
+                risk=risk,
+                findings=findings,
                 metadata={
                     "protocolo": data.get("protocol"),
                     "frecuencia": data.get("frequency"),

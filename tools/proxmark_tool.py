@@ -21,15 +21,28 @@ class ProxmarkTool(BaseTool):
             parser = ProxmarkParser(input_data)
             data = parser.get_data()
             summary = parser.get_summary()
+            vulns = data.get("vulnerabilities", [])
+            # Determinar risk level
+            tipo = data.get("type", "Unknown")
+            if tipo in ("EM410x", "MIFARE Classic") or "CRITICO" in " ".join(vulns):
+                risk = "CRITICO"
+            elif tipo in ("MIFARE Plus", "ST25TA", "EMV"):
+                risk = "ALTO"
+            elif tipo == "Unknown":
+                risk = "DESCONOCIDO"
+            else:
+                risk = "MEDIO"
+
             return ToolResult(
                 success=True,
                 content=summary,
+                risk=risk,
+                findings=vulns,
                 metadata={
-                    "tipo": data.get("type", "Unknown"),
+                    "tipo": tipo,
                     "uid": data.get("uid") or data.get("raw_id"),
                     "protocolo": data.get("protocol"),
                     "frecuencia": data.get("frequency"),
-                    "vulnerabilidades": data.get("vulnerabilities", []),
                 }
             )
         except Exception as e:

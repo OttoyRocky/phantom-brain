@@ -8,10 +8,14 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 
+RISK_LEVELS = ["CRITICO", "ALTO", "MEDIO", "BAJO", "DESCONOCIDO"]
+
 @dataclass
 class ToolResult:
     success: bool
-    content: str
+    content: str                                          # texto para el LLM
+    risk: str = "DESCONOCIDO"                            # CRITICO/ALTO/MEDIO/BAJO
+    findings: list = field(default_factory=list)         # hallazgos clave estructurados
     metadata: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
 

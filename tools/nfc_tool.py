@@ -20,11 +20,25 @@ class NFCTool(BaseTool):
             parser = NFCParser(input_data)
             data = parser.get_data()
             summary = parser.get_summary() if hasattr(parser, "get_summary") else str(data)
+            tipo = data.get("card_type") or data.get("type", "Unknown")
+            tipo_lower = str(tipo).lower()
+            if "classic" in tipo_lower or "mifare" in tipo_lower:
+                risk = "CRITICO"
+            elif "emv" in tipo_lower or "ntag" in tipo_lower:
+                risk = "ALTO"
+            elif "desfire" in tipo_lower:
+                risk = "MEDIO"
+            else:
+                risk = "DESCONOCIDO"
+            findings = data.get("vulnerabilities", [])
+
             return ToolResult(
                 success=True,
                 content=summary,
+                risk=risk,
+                findings=findings,
                 metadata={
-                    "tipo": data.get("card_type") or data.get("type", "Unknown"),
+                    "tipo": tipo,
                     "uid": data.get("uid"),
                     "protocolo": data.get("protocol"),
                 }

@@ -21,14 +21,27 @@ class WPA2Tool(BaseTool):
             parser = PCAPParserV2(input_data)
             data = parser.get_data()
             summary = parser.get_summary() if hasattr(parser, "get_summary") else str(data)
+            handshake = data.get("handshake_complete", False)
+            pmkid = data.get("pmkid_found", False)
+            risk = "CRITICO" if (handshake or pmkid) else "MEDIO"
+            findings = []
+            if handshake:
+                findings.append("Handshake WPA2 completo - crackeo offline posible")
+            if pmkid:
+                findings.append("PMKID capturado - no requiere cliente conectado")
+            if not findings:
+                findings.append("Handshake incompleto - captura parcial")
+
             return ToolResult(
                 success=True,
                 content=summary,
+                risk=risk,
+                findings=findings,
                 metadata={
                     "bssid": data.get("bssid"),
                     "ssid": data.get("ssid"),
-                    "handshake_completo": data.get("handshake_complete", False),
-                    "pmkid": data.get("pmkid_found", False),
+                    "handshake_completo": handshake,
+                    "pmkid": pmkid,
                 }
             )
         except Exception as e:
