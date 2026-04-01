@@ -1,7 +1,7 @@
 # PHANTOM BRAIN v0.8
 
 > **Offline AI-powered pentesting analysis tool with real hardware integration**
-> 
+>
 > Local LLM analysis (via Ollama) for WiFi, Sub-GHz, NFC/RFID and WPA2 captures — no internet required, no cloud APIs, 100% offline.
 
 **Hardware supported:** Flipper Zero · WiFi Pineapple MK7 · Proxmark3 · Raspberry Pi 4 (Kali Linux) · Atheros AR9271
@@ -44,6 +44,14 @@ BASE (Fija):
 └──────────────────────┘
 ```
 
+### Pipeline de Análisis (v0.8)
+
+```
+input → classifier → tool.run() → ToolResult(risk, findings) → Ollama
+```
+
+Cada tipo de captura pasa por su tool específico antes de llegar al LLM. El tool estructura el resultado con nivel de riesgo y hallazgos clave, enriqueciendo el contexto que recibe Ollama.
+
 ---
 
 ## Features
@@ -73,6 +81,13 @@ BASE (Fija):
 - Extracción: BSSID, SSID, frames EAPOL, PMKID
 - Validación de handshakes completos
 - Pipeline completo: `hcxpcapngtool` → `hashcat -m 22000`
+
+### Sistema de Tools (nuevo en v0.8)
+- `tools/base_tool.py` — contrato unificado `BaseTool` + `ToolResult`
+- `ToolResult` con campos `risk` (CRITICO/ALTO/MEDIO/BAJO) y `findings` estructurados
+- `tools/registry.py` — registro central, despacha el tool correcto por tipo
+- `tools/classifier.py` — auto-detección de tipo por extensión y contenido
+- 14/14 tests pasando con fixtures reales (`pytest tests/test_tools.py`)
 
 ### Base de Datos y Reportes
 - SQLite para historial de análisis (`db_manager.py`)
@@ -118,6 +133,18 @@ phantom-brain/
 ├── proxmark_launch.bat       # Script lanzador Proxmark3 (Windows)
 ├── config.yaml.example       # Plantilla de configuración
 ├── requirements.txt          # Dependencias Python
+├── tools/                    # Sistema de tools modular (v0.8)
+│   ├── base_tool.py          # BaseTool + ToolResult con risk/findings
+│   ├── classifier.py         # Auto-detección de tipo de captura
+│   ├── registry.py           # Registro central de tools
+│   ├── proxmark_tool.py      # Tool Proxmark3
+│   ├── nfc_tool.py           # Tool NFC
+│   ├── wpa2_tool.py          # Tool WPA2/PCAP
+│   └── subghz_tool.py        # Tool Sub-GHz
+├── tests/                    # Tests automatizados (14/14 pasando)
+│   └── test_tools.py
+├── prompts/                  # System prompts separados por tipo
+│   └── system_prompts.py
 ├── reportes/                 # Reportes generados (ignorado en git)
 ├── pcap/                     # Capturas WPA2 (ignorado en git)
 └── archive/                  # Versiones anteriores
@@ -175,6 +202,9 @@ python flask_api.py
 
 # Verificar API
 curl http://127.0.0.1:5000/status
+
+# Correr tests
+python -m pytest tests/test_tools.py -v
 ```
 
 ### Menú principal
@@ -201,7 +231,8 @@ curl http://127.0.0.1:5000/status
 | 0.5 | ✅ | WPA2 Handshakes + Proxmark3 |
 | 0.6 | ✅ | SQLite + Flask API + deepseek-r1:7b |
 | 0.7 | ✅ | Raspberry Pi operativa + streaming + timeout |
-| 0.8 | 🔄 | Atheros AR9271 captura en vivo + demo completo |
+| 0.8 | ✅ | Sistema de tools modular + ToolResult(risk/findings) + pipeline completo + 14/14 tests |
+| 0.9 | 🔄 | Atheros AR9271 captura en vivo + demo completo |
 | 1.0 | ⏳ | Testing completo hardware real + release |
 
 ---
