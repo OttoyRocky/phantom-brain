@@ -1020,6 +1020,21 @@ def guardar_reporte(scan_input, resultado, tipo="Generico", uid_bssid=None, mode
 def analizar(scan_input, modelo, tipo_captura="Generico"):
     print(f"\nAnalizando con {modelo}...\n")
     try:
+        # --- Enriquecer input con ToolResult si hay tool disponible ---
+        try:
+            from tools.registry import get_tool
+            tool = get_tool(tipo_captura)
+            if tool is not None:
+                tool_result = tool.run(scan_input)
+                if tool_result.success:
+                    encabezado = f"[RISK: {tool_result.risk}]"
+                    if tool_result.findings:
+                        encabezado += "\nHallazgos clave: " + ", ".join(tool_result.findings)
+                    scan_input = encabezado + "\n\n" + tool_result.content
+        except Exception as e:
+            logger.debug(f"Tool registry no disponible o fallo, usando input directo: {e}")
+        # --- Fin enriquecimiento ---
+
         ia_cfg = CONFIG.get("ia", {})
         num_predict = ia_cfg.get("num_predict", 3000)
         temperatura = ia_cfg.get("temperatura", 0.7)
