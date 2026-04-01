@@ -870,7 +870,12 @@ def obtener_input():
     opcion = input("\nElegi una opcion (1-10): ").strip()
 
     if opcion == "1":
-        return input("\nPega el output aqui:\n> "), False, "Manual", None
+        texto = input("\nPega el output aqui:\n> ")
+        from tools.classifier import clasificar
+        tipo_auto = clasificar(texto)
+        if tipo_auto != "Generico":
+            print(f"[AUTO] Tipo detectado: {tipo_auto}")
+        return texto, False, tipo_auto, None
 
     elif opcion == "2":
         archivo = input("\nNombre del archivo (ej: scan1.txt): ").strip()
@@ -881,7 +886,11 @@ def obtener_input():
             with open(archivo, "r", encoding="utf-8") as f:
                 contenido = f.read()
             print(f"Archivo '{archivo}' cargado correctamente.")
-            return contenido, False, "Generico", None
+            from tools.classifier import clasificar
+            tipo_auto = clasificar(archivo) if clasificar(archivo) != "Generico" else clasificar(contenido)
+            if tipo_auto != "Generico":
+                print(f"[AUTO] Tipo detectado: {tipo_auto}")
+            return contenido, False, tipo_auto, None
         except Exception as e:
             print(f"[ERROR] No se pudo leer el archivo: {e}")
             return None, False, "Generico", None
