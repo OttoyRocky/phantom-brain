@@ -45,6 +45,10 @@ def _clasificar_texto(texto: str) -> str:
     if any(k in t for k in ["em 410x", "em410x", "mifare", "proxmark", "hf search", "lf search", "t55xx", "emv", "st25ta", "indala"]):
         return "Proxmark3"
 
+    # WiFi Marauder (antes de WPA2 porque también tiene bssid/essid)
+    if any(k in t for k in ["rxd wps configs", "marauder", "rssi:", "redes con wps"]):
+        return "WiFi-Marauder"
+
     # WPA2
     if any(k in t for k in ["eapol", "handshake", "pmkid", "hcxpcapngtool", "wpa2", "bssid", "essid"]):
         return "WPA2"
