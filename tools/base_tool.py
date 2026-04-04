@@ -5,17 +5,17 @@ Clase base para todas las herramientas de analisis.
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 
-RISK_LEVELS = ["CRITICO", "ALTO", "MEDIO", "BAJO", "DESCONOCIDO"]
+RiskLevel = Literal["CRITICO", "ALTO", "MEDIO", "BAJO", "DESCONOCIDO"]
 
 @dataclass
 class ToolResult:
     success: bool
     content: str                                          # texto para el LLM
-    risk: str = "DESCONOCIDO"                            # CRITICO/ALTO/MEDIO/BAJO
-    findings: list = field(default_factory=list)         # hallazgos clave estructurados
+    risk: RiskLevel = "DESCONOCIDO"                      # CRITICO/ALTO/MEDIO/BAJO
+    findings: List[str] = field(default_factory=list)    # hallazgos clave estructurados
     metadata: Dict[str, Any] = field(default_factory=dict)
     error: Optional[str] = None
 

@@ -96,5 +96,65 @@ class TestWPA2Tool(unittest.TestCase):
         self.assertFalse(t.validate("no_existe.pcap"))
 
 
+
+
+class TestInputsCorruptos(unittest.TestCase):
+
+    def test_proxmark_vacio(self):
+        from tools.proxmark_tool import ProxmarkTool
+        t = ProxmarkTool()
+        self.assertFalse(t.validate(""))
+        self.assertFalse(t.validate("   "))
+
+    def test_proxmark_basura(self):
+        from tools.proxmark_tool import ProxmarkTool
+        t = ProxmarkTool()
+        result = t.run("basura aleatoria sin contexto 12345")
+        self.assertTrue(result.success)
+        self.assertEqual(result.metadata.get("tipo"), "Unknown")
+
+    def test_wpa2_archivo_inexistente(self):
+        from tools.wpa2_tool import WPA2Tool
+        t = WPA2Tool()
+        self.assertFalse(t.validate("/tmp/no_existe_jamas.pcap"))
+
+    def test_wpa2_archivo_vacio(self):
+        import tempfile, os
+        from tools.wpa2_tool import WPA2Tool
+        t = WPA2Tool()
+        with tempfile.NamedTemporaryFile(suffix=".pcap", delete=False) as f:
+            f.write(b"")
+            path = f.name
+        try:
+            result = t.run(path)
+            # scapy acepta pcap vacio - verificamos que no crashea
+            self.assertIsNotNone(result)
+        finally:
+            os.unlink(path)
+
+    def test_nfc_archivo_inexistente(self):
+        from tools.nfc_tool import NFCTool
+        t = NFCTool()
+        result = t.run("/tmp/no_existe.nfc")
+        # El tool maneja el error internamente
+        self.assertFalse(result.success)
+        self.assertIsNotNone(result.error)
+
+    def test_classifier_string_vacio(self):
+        from tools.classifier import clasificar
+        self.assertEqual(clasificar(""), "Generico")
+
+    def test_classifier_archivo_binario_random(self):
+        import tempfile, os
+        from tools.classifier import clasificar
+        with tempfile.NamedTemporaryFile(suffix=".txt", delete=False) as f:
+            f.write(b"\x00\x01\x02\x03\xff\xfe")
+            path = f.name
+        try:
+            result = clasificar(path)
+            self.assertIn(result, ["Generico", "Manual", "WPA2", "NFC", "Sub-GHz", "Proxmark3", "WiFi-Marauder"])
+        finally:
+            os.unlink(path)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
