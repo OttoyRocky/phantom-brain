@@ -15,6 +15,9 @@ class NFCTool(BaseTool):
         return obtener_prompt("NFC")
 
     def run(self, input_data: str) -> ToolResult:
+        import os
+        if not os.path.exists(input_data):
+            return ToolResult(success=False, content="", error=f"Archivo no encontrado: {input_data}")
         try:
             from nfc_parser import NFCParser
             parser = NFCParser(input_data)
