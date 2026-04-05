@@ -139,7 +139,7 @@ Handshake OK   : {self.data.get('handshake_complete')}{pmkid_line}
 def analyze_pcap_files(directory, min_size_kb=5):
     results = []
     try:
-        files = [f for f in os.listdir(directory) if f.endswith('.pcap')]
+        files = [f for f in os.listdir(directory) if f.endswith('.pcap') or f.endswith('.pcapng') or f.endswith('.cap') or f.endswith('.hc22000')]
     except Exception as e:
         print(f"[ERROR] No se pudo leer '{directory}': {e}")
         return results
