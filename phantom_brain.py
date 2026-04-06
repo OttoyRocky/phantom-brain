@@ -1004,7 +1004,8 @@ def obtener_input():
         return resultado
 
     elif opcion == "11":
-        return menu_wordlist_ia(), False, "Generico", None
+        menu_wordlist_ia()
+        sys.exit(0)
 
     else:
         print("Opcion invalida.")
