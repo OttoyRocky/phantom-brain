@@ -1042,7 +1042,7 @@ def analizar(scan_input, modelo, tipo_captura="Generico"):
         prompt = obtener_prompt(tipo_captura)
 
         import ollama as _ollama_mod
-        client = _ollama_mod.Client(host="http://127.0.0.1:11434", timeout=timeout)
+        client = _ollama_mod.Client(host="http://172.20.160.1:11434", timeout=timeout)
 
         respuesta_completa = []
         print("", end="", flush=True)
