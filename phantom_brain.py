@@ -856,6 +856,43 @@ hashcat -m 22000 {archivo_hash} -a 3 ?l?l?l?l?d?d?d?d
     return contenido, False, "WPA2", None
 
 
+def menu_wordlist_ia():
+    print("\n=== GENERADOR DE WORDLIST INTELIGENTE ===")
+    print("Usa IA para generar passwords probables basados en el SSID.\n")
+
+    ssid = input("SSID objetivo: ").strip()
+    if not ssid:
+        print("[ERROR] SSID vacio")
+        return None
+
+    contexto = input("Contexto (pais, ISP - Enter para omitir): ").strip()
+    cantidad = input("Cantidad de passwords (Enter 50): ").strip()
+    cantidad = int(cantidad) if cantidad.isdigit() else 50
+
+    prompt = f"""Genera {cantidad} passwords para SSID '{ssid}'.
+Contexto: {contexto if contexto else 'Argentina, WiFi hogareño'}
+Reglas: variantes del SSID, años 2020-2025, fechas argentinas, simbolos !@#, combinaciones SSID+año.
+Devuelve SOLO passwords, uno por linea."""
+
+    try:
+        import ollama, datetime
+        client = ollama.Client(host="http://172.20.160.1:11434", timeout=180)
+        resp = client.chat(model="mistral:7b-instruct", messages=[{"role": "user", "content": prompt}], options={"num_predict": 2000})
+        passwords = resp['message']['content'].strip()
+        archivo = f"wordlist_{ssid}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        with open(archivo, "w") as f:
+            f.write(passwords)
+        print(f"\n[OK] Guardado: {archivo}")
+        print("\n--- PREVIEW ---")
+        for l in passwords.split('\n')[:10]:
+            print(f"  {l}")
+        print(f"\n[COMANDO] hashcat -m 22000 captura.hc22000 {archivo}")
+        return archivo
+    except Exception as e:
+        print(f"[ERROR] {e}")
+        return None
+
+
 def obtener_input():
     print("\n1. Pegar texto manualmente")
     print("2. Leer archivo generico (scan.txt, nmap, etc)")
@@ -867,6 +904,7 @@ def obtener_input():
     print("8. Ver historial de reportes")
     print("9. Guias de explotacion (sin analisis IA)")
     print("10. Captura en vivo WiFi - Atheros AR9271 (solo Raspberry Pi)")
+    print("11. Generar wordlist inteligente con IA (basada en SSID)")
     opcion = input("\nElegi una opcion (1-10): ").strip()
 
     if opcion == "1":
@@ -964,6 +1002,9 @@ def obtener_input():
             print("Operacion cancelada.")
             sys.exit(0)
         return resultado
+
+    elif opcion == "11":
+        return menu_wordlist_ia(), False, "Generico", None
 
     else:
         print("Opcion invalida.")

@@ -56,3 +56,4 @@ OllamaSetup.exe
 # Hardware
 proxmark/
 pcap/
+wordlist_*.txt
