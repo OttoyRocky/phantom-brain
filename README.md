@@ -218,7 +218,17 @@ python -m pytest tests/test_tools.py -v
 7. Analizar captura Proxmark3 (pegar output directo)
 8. Ver historial de reportes
 9. Guías de explotación (sin análisis IA)
+10. Captura en vivo WiFi - Atheros AR9271 (solo Raspberry Pi)
+11. Generar wordlist inteligente con IA (basada en SSID)
 ```
+
+### Generación de Wordlists Inteligente con IA
+
+- Genera diccionarios personalizados usando IA local (Ollama) a partir del SSID objetivo.
+- Entrada: SSID + contexto opcional (país, ISP, año, etc).
+- Salida: archivo `wordlist_<SSID>_<timestamp>.txt` en el directorio de trabajo actual.
+- Patrones generados: variantes del SSID, años 2020-2025, fechas argentinas, referencias típicas (ISP, fútbol, eventos), y símbolos como `!@#`.
+- Muestra un comando `hashcat -m 22000 captura.hc22000 wordlist_<SSID>_<timestamp>.txt` listo para usar al final.
 
 ---
 
@@ -232,7 +242,7 @@ python -m pytest tests/test_tools.py -v
 | 0.6 | ✅ | SQLite + Flask API + deepseek-r1:7b |
 | 0.7 | ✅ | Raspberry Pi operativa + streaming + timeout |
 | 0.8 | ✅ | Sistema de tools modular + ToolResult(risk/findings) + pipeline completo + 14/14 tests |
-| 0.9 | 🔄 | Atheros AR9271 captura en vivo + demo completo |
+| 0.9 | ✅ | Atheros AR9271 captura en vivo + generación de wordlists IA + demo completo |
 | 1.0 | ⏳ | Testing completo hardware real + release |
 
 ---
