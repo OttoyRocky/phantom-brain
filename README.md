@@ -1,4 +1,4 @@
-# PHANTOM BRAIN v0.8
+# PHANTOM BRAIN v0.9
 
 > **Offline AI-powered pentesting analysis tool with real hardware integration**
 >
@@ -12,7 +12,7 @@
 
 ---
 
-# PHANTOM BRAIN v0.8
+# PHANTOM BRAIN v0.9
 ## Sistema de Análisis Ofensivo Offline con IA y Hardware Real
 
 Herramienta modular de pentesting que integra análisis de seguridad para WiFi, Sub-GHz, NFC/RFID y WPA2 usando IA local (Ollama). Sin APIs externas, 100% offline.
@@ -40,11 +40,11 @@ BASE (Fija):
 └──────────────────────┘
 ┌──────────────────────┐
 │  Raspberry Pi 4      │ ──► Nodo secundario con phi3:mini
-│  Kali Linux + Ollama │     Atheros AR9271 para captura en vivo (v0.8)
+│  Kali Linux + Ollama │     Atheros AR9271 para captura en vivo (v0.9)
 └──────────────────────┘
 ```
 
-### Pipeline de Análisis (v0.8)
+### Pipeline de Análisis (v0.9)
 
 ```
 input → classifier → tool.run() → ToolResult(risk, findings) → Ollama
@@ -82,7 +82,7 @@ Cada tipo de captura pasa por su tool específico antes de llegar al LLM. El too
 - Validación de handshakes completos
 - Pipeline completo: `hcxpcapngtool` → `hashcat -m 22000`
 
-### Sistema de Tools (nuevo en v0.8)
+### Sistema de Tools (nuevo en v0.9)
 - `tools/base_tool.py` — contrato unificado `BaseTool` + `ToolResult`
 - `ToolResult` con campos `risk` (CRITICO/ALTO/MEDIO/BAJO) y `findings` estructurados
 - `tools/registry.py` — registro central, despacha el tool correcto por tipo
@@ -133,7 +133,7 @@ phantom-brain/
 ├── proxmark_launch.bat       # Script lanzador Proxmark3 (Windows)
 ├── config.yaml.example       # Plantilla de configuración
 ├── requirements.txt          # Dependencias Python
-├── tools/                    # Sistema de tools modular (v0.8)
+├── tools/                    # Sistema de tools modular (v0.9)
 │   ├── base_tool.py          # BaseTool + ToolResult con risk/findings
 │   ├── classifier.py         # Auto-detección de tipo de captura
 │   ├── registry.py           # Registro central de tools
