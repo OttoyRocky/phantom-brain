@@ -609,7 +609,7 @@ def menu_captura_vivo():
     import time
 
     INTERFAZ = "wlan1"
-    INTERFAZ_MON = "wlan1mon"
+    INTERFAZ_MON = "wlan1"
     DIRECTORIO_PCAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pcap")
     os.makedirs(DIRECTORIO_PCAP, exist_ok=True)
 
