@@ -136,16 +136,46 @@ Handshake OK   : {self.data.get('handshake_complete')}{pmkid_line}
 """
 
 
-def analyze_pcap_files(directory, min_size_kb=5):
+def analyze_pcap_files(directory, min_size_kb=1):
     results = []
     try:
         files = [f for f in os.listdir(directory) if f.endswith('.pcap') or f.endswith('.pcapng') or f.endswith('.cap') or f.endswith('.hc22000')]
     except Exception as e:
         print(f"[ERROR] No se pudo leer '{directory}': {e}")
         return results
-    for file in sorted(files):
+for file in sorted(files):
         filepath = os.path.join(directory, file)
-        if os.path.getsize(filepath) / 1024 >= min_size_kb:
+        size_kb = os.path.getsize(filepath) / 1024
+        
+        # Handler especial para .hc22000 - no usar Scapy
+        if file.endswith('.hc22000'):
+            if size_kb >= min_size_kb:
+                with open(filepath, 'r', errors='ignore') as f:
+                    contenido = f.read().strip()
+                lineas = [l for l in contenido.split('\n') if l.strip()]
+                data = {
+                    'filename': file,
+                    'total_packets': len(lineas),
+                    'bssid': None,
+                    'ssid': None,
+                    'eapol_frames': [{'frame_num': i+1, 'src': 'N/A', 'dst': 'N/A'} for i in range(len(lineas))],
+                    'handshake_complete': len(lineas) > 0,
+                    'pmkid_found': False,
+                    'pmkid_hash': None,
+                    'vulnerabilities': [{
+                        'nivel': 'CRITICO',
+                        'nombre': 'Hash WPA2 listo para crackeo',
+                        'descripcion': (
+                            f'Archivo hc22000 con {len(lineas)} hash(es). Listo para hashcat.\n'
+                            f'  hashcat -m 22000 {file} rockyou.txt\n'
+                            f'  hashcat -m 22000 {file} -a 3 ?l?l?l?l?d?d?d?d'
+                        )
+                    }]
+                }
+                results.append(data)
+            continue
+        
+        if size_kb >= min_size_kb:
             parser = PCAPParserV2(filepath)
             data = parser.get_data()
             if 'error' not in data:
