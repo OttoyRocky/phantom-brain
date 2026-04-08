@@ -143,7 +143,7 @@ def analyze_pcap_files(directory, min_size_kb=1):
     except Exception as e:
         print(f"[ERROR] No se pudo leer '{directory}': {e}")
         return results
-for file in sorted(files):
+    for file in sorted(files):
         filepath = os.path.join(directory, file)
         size_kb = os.path.getsize(filepath) / 1024
         
