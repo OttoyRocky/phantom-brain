@@ -78,8 +78,8 @@ class BenchmarkRunner:
                 "nivel": "MEDIO"
             })
         
-        # Buscar Handshake Completo
-        if "handshake completo: true" in out_lower or "handshake ok" in out_lower or "handshake completo" in out_lower:
+        # Solo detectar handshake_completo si explícitamente dice "Handshake completo: True" o "handshake OK"
+        if ("handshake completo: true" in out_lower or "handshake ok" in out_lower) and "incompleto" not in out_lower:
             vulnerabilidades.append({
                 "tipo": "handshake_completo",
                 "nivel": "INFO"
