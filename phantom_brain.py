@@ -893,6 +893,123 @@ Devuelve SOLO passwords, uno por linea."""
         return None
 
 
+def _extraer_campo_desde_texto(texto, campo):
+    """Extrae 'Campo: valor' desde texto multilinea."""
+    if not texto:
+        return "N/A"
+    match = re.search(rf"^{re.escape(campo)}\s*:\s*(.+)$", texto, re.MULTILINE)
+    return match.group(1).strip() if match else "N/A"
+
+
+def _formatear_salida_facts_only(tool_result, tipo_captura):
+    """Mantiene formato similar al flujo IA, pero solo con salida de parser/tool."""
+    contenido = (tool_result.content or "").strip()
+    bssid = _extraer_campo_desde_texto(contenido, "BSSID")
+    ssid = _extraer_campo_desde_texto(contenido, "SSID")
+    riesgo = tool_result.risk or "BAJO"
+    findings = tool_result.findings or []
+    findings_txt = ", ".join(findings) if findings else "Sin hallazgos estructurados"
+
+    salida = []
+    salida.append(f"=== ANALISIS {tipo_captura} (SOLO PARSERS) ===")
+    salida.append("")
+    salida.append(f"BSSID: {bssid}")
+    salida.append(f"SSID: {ssid}")
+    salida.append(f"Riesgo: {riesgo}")
+    salida.append(f"Findings: {findings_txt}")
+    salida.append("")
+    salida.append("ANALISIS:")
+    salida.append(contenido if contenido else "[Sin contenido estructurado del parser]")
+    return "\n".join(salida), bssid, ssid
+
+
+def menu_facts_only():
+    """Menu de analisis sin IA usando solo parsers + tools."""
+    while True:
+        print("\n" + "=" * 55)
+        print("   MODO HECHOS - ANALIZAR SIN IA (SOLO PARSERS)")
+        print("=" * 55)
+        print("4. Analizar capturas Sub-GHz (.sub)")
+        print("5. Analizar capturas NFC (.nfc)")
+        print("6. Analizar capturas WPA2 Handshakes (.pcap)")
+        print("7. Analizar captura Proxmark3 (pegar output directo)")
+        print("0. Volver al menu principal")
+        opcion = input("\nSelecciona una opcion (0/4/5/6/7): ").strip()
+
+        if opcion == "0":
+            return
+
+        tipo_captura = None
+        contenido = None
+        datos_extra = None
+
+        if opcion == "4":
+            print("Cargando capturas Sub-GHz disponibles...")
+            tipo_captura = "Sub-GHz"
+            contenido = menu_subghz()
+        elif opcion == "5":
+            print("Cargando capturas NFC disponibles...")
+            tipo_captura = "NFC"
+            contenido = menu_nfc()
+        elif opcion == "6":
+            print("Cargando capturas WPA2 disponibles...")
+            tipo_captura = "WPA2"
+            contenido = menu_pcap()
+        elif opcion == "7":
+            tipo_captura = "Proxmark3"
+            contenido, datos_extra = menu_proxmark()
+        else:
+            print("Opcion invalida.")
+            continue
+
+        if not contenido:
+            print("Operacion cancelada.")
+            continue
+
+        try:
+            from tools.registry import get_tool
+            tool = get_tool(tipo_captura)
+            if tool is None:
+                print(f"[ERROR] No hay tool registrado para tipo '{tipo_captura}'.")
+                continue
+            tool_result = tool.run(contenido)
+        except Exception as e:
+            logger.error(f"Error en modo facts-only ({tipo_captura}): {e}")
+            print(f"[ERROR] No se pudo ejecutar el parser estructurado: {e}")
+            continue
+
+        if not getattr(tool_result, "success", False):
+            detalle = getattr(tool_result, "error", "Error desconocido")
+            print(f"[ERROR] El parser/tool no pudo procesar la captura: {detalle}")
+            continue
+
+        salida, bssid, ssid = _formatear_salida_facts_only(tool_result, tipo_captura)
+        print("\n" + salida)
+
+        uid_bssid = None
+        if bssid != "N/A":
+            uid_bssid = bssid
+        elif ssid != "N/A":
+            uid_bssid = ssid
+        elif datos_extra and isinstance(datos_extra, dict):
+            uid_bssid = datos_extra.get("uid") or datos_extra.get("raw_id")
+
+        nombre_reporte = guardar_reporte(
+            scan_input=contenido,
+            resultado=salida,
+            tipo=tipo_captura,
+            uid_bssid=uid_bssid,
+            modelo="SIN_IA"
+        )
+        print("\n" + "=" * 55)
+        print(f"Reporte guardado como: {nombre_reporte}")
+        print("=" * 55)
+
+        seguir = input("\n¿Analizar otra captura en modo hechos? (s/n): ").strip().lower()
+        if seguir != "s":
+            return
+
+
 def obtener_input():
     print("\n1. Pegar texto manualmente")
     print("2. Leer archivo generico (scan.txt, nmap, etc)")
@@ -905,7 +1022,8 @@ def obtener_input():
     print("9. Guias de explotacion (sin analisis IA)")
     print("10. Captura en vivo WiFi - Atheros AR9271 (solo Raspberry Pi)")
     print("11. Generar wordlist inteligente con IA (basada en SSID)")
-    opcion = input("\nElegi una opcion (1-10): ").strip()
+    print("12. Analizar sin IA (solo parsers - modo hechos)")
+    opcion = input("\nElegi una opcion (1-12): ").strip()
 
     if opcion == "1":
         texto = input("\nPega el output aqui:\n> ")
@@ -1007,6 +1125,10 @@ def obtener_input():
         menu_wordlist_ia()
         sys.exit(0)
 
+    elif opcion == "12":
+        menu_facts_only()
+        return obtener_input()
+
     else:
         print("Opcion invalida.")
         sys.exit(1)
@@ -1059,8 +1181,133 @@ def guardar_reporte(scan_input, resultado, tipo="Generico", uid_bssid=None, mode
 
 # --- Analizador IA ---
 
+CVES_CONOCIDOS_LOCAL = {
+    "CVE-2017-13077",
+    "CVE-2017-13078",
+    "CVE-2017-13079",
+    "CVE-2017-13080",
+    "CVE-2017-13081",
+    "CVE-2017-13082",
+    "CVE-2017-13084",
+    "CVE-2019-15126",
+    "CVE-2023-52160",
+}
+
+COMANDOS_BASE_PERMITIDOS = {
+    "hashcat",
+    "aircrack-ng",
+    "hcxpcapngtool",
+    "hcxdumptool",
+    "airodump-ng",
+    "aireplay-ng",
+    "wash",
+    "reaver",
+    "tshark",
+}
+
+
+def validar_hallazgos_ia(texto_ia, datos_parser):
+    """Valida hallazgos IA usando reglas locales, sin APIs externas."""
+    texto = texto_ia or ""
+    cves = sorted(set(re.findall(r"\bCVE-\d{4}-\d{4,7}\b", texto, flags=re.IGNORECASE)))
+    cves = [c.upper() for c in cves]
+
+    cves_verificados = []
+    cves_no_encontrados = []
+    for cve in cves:
+        if cve in CVES_CONOCIDOS_LOCAL:
+            cves_verificados.append(cve)
+        else:
+            cves_no_encontrados.append(cve)
+
+    lineas = [l.strip() for l in texto.splitlines() if l.strip()]
+    comandos_validos = []
+    comandos_sospechosos = []
+    comandos_detectados = []
+
+    for linea in lineas:
+        limpia = re.sub(r"^[`>*\-•\d\.\)\s]+", "", linea).strip()
+        if not limpia:
+            continue
+        tokens = limpia.split()
+        if not tokens:
+            continue
+        base = tokens[0].lower()
+        if base not in COMANDOS_BASE_PERMITIDOS:
+            continue
+
+        comandos_detectados.append(limpia)
+        valido = True
+        motivo = ""
+
+        if base == "hashcat" and "-m" not in tokens:
+            valido = False
+            motivo = "falta parametro -m"
+        elif base in {"aircrack-ng", "airodump-ng", "aireplay-ng"} and len(tokens) < 2:
+            valido = False
+            motivo = "faltan argumentos minimos"
+        elif base == "hcxpcapngtool" and "-o" not in tokens:
+            valido = False
+            motivo = "falta parametro -o"
+
+        if valido:
+            comandos_validos.append(limpia)
+        else:
+            comandos_sospechosos.append(f"{limpia} [{motivo}]")
+
+    findings_parser = []
+    riesgo_parser = "N/A"
+    if datos_parser is not None:
+        findings_parser = getattr(datos_parser, "findings", []) or []
+        riesgo_parser = getattr(datos_parser, "risk", "N/A") or "N/A"
+
+    estado_general = "verificado"
+    if cves_no_encontrados or comandos_sospechosos:
+        estado_general = "sospechoso"
+    if not findings_parser and (cves or comandos_detectados):
+        estado_general = "sospechoso"
+
+    return {
+        "cves_verificados": cves_verificados,
+        "cves_no_encontrados": cves_no_encontrados,
+        "comandos_validos": comandos_validos,
+        "comandos_sospechosos": comandos_sospechosos,
+        "riesgo_parser": riesgo_parser,
+        "findings_parser": findings_parser,
+        "estado_general": estado_general
+    }
+
+
+def construir_seccion_validacion_post_ia(validacion):
+    """Construye el bloque [VALIDACION POST-IA] para anexar al reporte."""
+    cves_ok = validacion.get("cves_verificados", [])
+    cves_bad = validacion.get("cves_no_encontrados", [])
+    cmds_ok = validacion.get("comandos_validos", [])
+    cmds_bad = validacion.get("comandos_sospechosos", [])
+
+    lineas = [
+        "[VALIDACION POST-IA]",
+        f"Estado general: {validacion.get('estado_general', 'sospechoso').upper()}",
+        "CVEs verificados: " + (", ".join(cves_ok) if cves_ok else "Ninguno"),
+        "CVEs no encontrados: " + (", ".join(cves_bad) if cves_bad else "Ninguno"),
+        "Comandos validos: " + (" | ".join(cmds_ok) if cmds_ok else "Ninguno detectado"),
+        "Comandos sospechosos: " + (" | ".join(cmds_bad) if cmds_bad else "Ninguno"),
+        "Advertencia: Los hallazgos no verificados pueden ser alucinaciones.",
+    ]
+
+    riesgo_parser = validacion.get("riesgo_parser", "N/A")
+    findings_parser = validacion.get("findings_parser", [])
+    if riesgo_parser != "N/A" or findings_parser:
+        lineas.append(
+            f"Contexto parser -> Riesgo: {riesgo_parser}; Findings: "
+            f"{', '.join(findings_parser) if findings_parser else 'Sin findings'}"
+        )
+    return "\n".join(lineas)
+
+
 def analizar(scan_input, modelo, tipo_captura="Generico"):
     print(f"\nAnalizando con {modelo}...\n")
+    tool_result = None
     try:
         # --- Enriquecer input con ToolResult si hay tool disponible ---
         try:
@@ -1104,7 +1351,17 @@ def analizar(scan_input, modelo, tipo_captura="Generico"):
         print()  # salto de linea al terminar
 
         logger.info(f"Analisis completado con modelo: {modelo}, tipo: {tipo_captura}")
-        return "".join(respuesta_completa)
+        respuesta_texto = "".join(respuesta_completa)
+
+        try:
+            validacion = validar_hallazgos_ia(respuesta_texto, tool_result)
+            seccion_validacion = construir_seccion_validacion_post_ia(validacion)
+            respuesta_texto += "\n\n" + seccion_validacion
+            print("\n" + seccion_validacion)
+        except Exception as e:
+            logger.warning(f"No se pudo ejecutar validacion post-IA: {e}")
+
+        return respuesta_texto
     except Exception as e:
         logger.error(f"Error al analizar con Ollama ({modelo}): {e}")
         print(f"\n[ERROR] No se pudo conectar con Ollama o el modelo '{modelo}' no esta disponible.")
