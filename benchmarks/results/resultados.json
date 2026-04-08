@@ -1,0 +1,64 @@
+{
+  "wpa2_hechos": [
+    {
+      "file": "handshake_personal-01.cap",
+      "mode": "hechos",
+      "return_code": 0,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1_score": 0.6667,
+        "falsos_positivos": 1,
+        "falsos_negativos": 0
+      },
+      "detected": [
+        {
+          "tipo": "handshake_incompleto",
+          "nivel": "MEDIO"
+        },
+        {
+          "tipo": "handshake_completo",
+          "nivel": "INFO"
+        }
+      ],
+      "expected": [
+        {
+          "tipo": "handshake_incompleto",
+          "nivel": "MEDIO",
+          "descripcion": "Solo 3 frames EAPOL"
+        }
+      ]
+    }
+  ],
+  "wpa2_ia": [
+    {
+      "file": "handshake_personal-01.cap",
+      "mode": "ia",
+      "return_code": 0,
+      "metrics": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1_score": 0.6667,
+        "falsos_positivos": 1,
+        "falsos_negativos": 0
+      },
+      "detected": [
+        {
+          "tipo": "handshake_incompleto",
+          "nivel": "MEDIO"
+        },
+        {
+          "tipo": "handshake_completo",
+          "nivel": "INFO"
+        }
+      ],
+      "expected": [
+        {
+          "tipo": "handshake_incompleto",
+          "nivel": "MEDIO",
+          "descripcion": "Solo 3 frames EAPOL"
+        }
+      ]
+    }
+  ]
+}

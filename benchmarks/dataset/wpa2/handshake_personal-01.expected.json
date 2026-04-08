@@ -1,0 +1,19 @@
+{
+  "vulnerabilidades_esperadas": [
+    {
+      "tipo": "handshake_incompleto",
+      "nivel": "MEDIO",
+      "descripcion": "Solo 3 frames EAPOL"
+    }
+  ],
+  "falsos_positivos_posibles": [
+    "handshake_completo",
+    "pmkid_found"
+  ],
+  "metadatos": {
+    "ssid": "Personal-WiFi-CD9-2.4Ghz",
+    "bssid": "80:ca:4b:ba:da:4c",
+    "handshake_completo": false,
+    "eapol_frames": 3
+  }
+}
