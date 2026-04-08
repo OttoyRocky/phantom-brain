@@ -239,8 +239,8 @@ python -m pytest tests/test_tools.py -v
 | 0.6 | ✅ | SQLite + Flask API + deepseek-r1:7b |
 | 0.7 | ✅ | Raspberry Pi operational + streaming + timeout |
 | 0.8 | ✅ | Modular tools system + ToolResult(risk/findings) + 14/14 tests |
-| 0.9 | ✅ | Atheros AR9271 live capture + AI wordlist + dual README |
-| **1.0** | ⏳ | Option 12 (facts-only mode) · post-AI validation · benchmarks · asciinema demo |
+| 0.9 | ✅ | Atheros AR9271 live capture + AI wordlist + dual README + Option 12 (facts-only mode) + post-AI validation + benchmarks |
+| **1.0** | ⏳ | Production release · hardware testing · asciinema demo · additional datasets |
 
 ---
 
