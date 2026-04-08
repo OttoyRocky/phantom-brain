@@ -32,7 +32,7 @@
 
 ## System Architecture
 
-\`\`\`
+```text
 FIELD (Mobile):
 ┌──────────────────┐
 │  Flipper Zero    │ ──► Sub-GHz (.sub), NFC (.nfc), WiFi scanning
@@ -53,7 +53,7 @@ BASE (Fixed):
 │  Raspberry Pi 4      │ ──► Secondary node with phi3:mini
 │  Kali Linux + Ollama │     Atheros AR9271 for live capture (v0.9)
 └──────────────────────┘
-\`\`\`
+```
 
 ### Analysis Pipeline (v0.9)
 
@@ -129,7 +129,7 @@ All run **100% offline** with Ollama.
 
 ## File Structure
 
-\`\`\`
+```text
 phantom-brain/
 ├── phantom_brain.py          # Main CLI - entry point
 ├── flask_api.py              # API REST Flask
@@ -156,10 +156,15 @@ phantom-brain/
 │   └── test_tools.py
 ├── prompts/                  # System prompts separated by type
 │   └── system_prompts.py
+├── benchmarks/               # Benchmark suite
+│   ├── dataset/              # Captures with expected results
+│   ├── results/              # JSON and markdown reports
+│   ├── benchmark_runner.py
+│   └── run_benchmark.py
 ├── reportes/                 # Generated reports (ignored in git)
 ├── pcap/                     # WPA2 captures (ignored in git)
 └── archive/                  # Previous versions
-\`\`\`
+```
 
 ---
 
