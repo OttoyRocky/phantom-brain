@@ -1,5 +1,21 @@
 # PHANTOM BRAIN v0.9
 
+> ⚠️ **Proyecto experimental — no para uso en producción.**
+> El análisis con IA asiste al investigador humano; no reemplaza una auditoría manual. Siempre verifica los hallazgos de forma independiente.
+
+## Lo que ES y NO ES Phantom Brain
+
+| ✅ Lo que ES | ❌ Lo que NO ES |
+|---|---|
+| Analizador automático que estructura hallazgos de capturas | Un reemplazo de Wireshark, bettercap o aircrack-ng |
+| Generador de reportes con IA (offline, LLM local) | Un pentester autónomo |
+| Orquestador entre herramientas hardware (Flipper, Pineapple, Proxmark) | Una herramienta de seguridad lista para producción |
+| Plataforma de investigación y aprendizaje | Un sustituto de auditoría manual |
+| 100% offline — sin exfiltración de datos | Dependiente de la nube o APIs |
+
+> 💡 Cada reporte generado por IA debe tratarse como un **punto de partida**, no como un veredicto final.
+> Los LLM pueden alucinar vulnerabilidades. La salida estructurada de los parsers (sin IA) es siempre más confiable.
+
 > **Offline AI-powered pentesting analysis tool with real hardware integration**
 >
 > Local LLM analysis (via Ollama) for WiFi, Sub-GHz, NFC/RFID and WPA2 captures — no internet required, no cloud APIs, 100% offline.
