@@ -1,0 +1,72 @@
+[
+  {
+    "device": "flipper",
+    "timestamp": "2026-04-09T14:55:04.298223",
+    "file": "benchmarks/dataset/flipper/handshake_personal-01.cap",
+    "hash": "6fb0278e",
+    "metadata": "desde pcap existente"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:10.813205",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_0.pcap",
+    "hash": "442d5a55",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:10.876880",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_0personalwifi.pcap",
+    "hash": "8c185721",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:10.935074",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_1.pcap",
+    "hash": "44b6e8a5",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:10.999768",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_1no.pcap",
+    "hash": "a8d3a273",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:11.062164",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_2.pcap",
+    "hash": "c3225360",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:11.124142",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_2costa.pcap",
+    "hash": "bef25d9c",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:11.194961",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_3.pcap",
+    "hash": "b4dbe840",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "proxmark3",
+    "timestamp": "2026-04-09T14:55:11.281074",
+    "file": "benchmarks/dataset/proxmark3/sniffpmkid_5.pcap",
+    "hash": "3badf1aa",
+    "metadata": "PMKID capture"
+  },
+  {
+    "device": "pineapple",
+    "timestamp": "2026-04-09T14:55:14.784979",
+    "file": "benchmarks/dataset/pineapple/handshake_personal-01.cap",
+    "hash": "6fb0278e",
+    "metadata": "handshake capture"
+  }
+]

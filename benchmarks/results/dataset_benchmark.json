@@ -1,0 +1,32 @@
+[
+  {
+    "device": "flipper",
+    "file": "handshake_personal-01.cap",
+    "hash": "6fb0278e",
+    "valid": false
+  },
+  {
+    "device": "proxmark3",
+    "file": "sniffpmkid_0personalwifi.pcap",
+    "hash": "8c185721",
+    "valid": false
+  },
+  {
+    "device": "proxmark3",
+    "file": "sniffpmkid_3.pcap",
+    "hash": "b4dbe840",
+    "valid": false
+  },
+  {
+    "device": "proxmark3",
+    "file": "sniffpmkid_5.pcap",
+    "hash": "3badf1aa",
+    "valid": false
+  },
+  {
+    "device": "pineapple",
+    "file": "handshake_personal-01.cap",
+    "hash": "6fb0278e",
+    "valid": false
+  }
+]
