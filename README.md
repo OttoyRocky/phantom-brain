@@ -3,6 +3,7 @@
 > **Offline AI-powered pentesting analysis tool with real hardware integration**
 >
 > Local LLM analysis (via Ollama) for WiFi, Sub-GHz, NFC/RFID and WPA2 captures — no internet required, no cloud APIs, 100% offline.
+> The main LLM runs on a Windows PC. The Raspberry Pi acts as a lightweight secondary node (live capture + phi3:mini only).
 
 **Hardware supported:** Flipper Zero · WiFi Pineapple MK7 · Proxmark3 · Raspberry Pi 4 (Kali Linux) · Atheros AR9271
 
@@ -44,16 +45,25 @@ FIELD (Mobile):
 │  Proxmark3       │ ──► Advanced RFID/NFC (EM410x, MIFARE, EMV)
 └──────────────────┘
 
-BASE (Fixed):
-┌──────────────────────┐
-│  Windows PC          │ ──► PHANTOM BRAIN CLI + Flask API
-│  Python 3.11+ Ollama │     Full analysis, automatic reports
-└──────────────────────┘
-┌──────────────────────┐
-│  Raspberry Pi 4      │ ──► Secondary node with phi3:mini
-│  Kali Linux + Ollama │     Atheros AR9271 for live capture (v0.9)
-└──────────────────────┘
+BASE — PRIMARY NODE (required for full functionality):
+┌──────────────────────────────────────────────────────┐
+│  Windows PC (or Linux desktop)                       │
+│  Python 3.11+ · Ollama · Flask API                  │
+│  Runs: mistral:7b-instruct, deepseek-r1:7b           │
+│  ► PHANTOM BRAIN CLI, full analysis, reports         │
+└──────────────────────────────────────────────────────┘
+
+BASE — SECONDARY NODE (optional, lightweight):
+┌──────────────────────────────────────────────────────┐
+│  Raspberry Pi 4 (Kali Linux)                         │
+│  Ollama · Atheros AR9271                             │
+│  Runs: phi3:mini only (mistral:7b too heavy for Pi)  │
+│  ► Live WiFi capture · lightweight local inference   │
+│  NOTE: connects to the PC's Ollama for heavy models  │
+└──────────────────────────────────────────────────────┘
 ```
+
+> ⚠️ **Architecture note:** The Raspberry Pi does **not** run the full Phantom Brain stack autonomously. For complete analysis with `mistral:7b-instruct` or `deepseek-r1:7b`, a PC with Ollama is required. The Pi serves as a capture node and can run `phi3:mini` for lightweight offline inference only.
 
 ### Analysis Pipeline (v0.9)
 
@@ -117,13 +127,15 @@ Each capture type goes through its specific tool before reaching the LLM. The to
 
 ## Supported AI Models
 
-| Model | Speed | Recommended for |
-|--------|-----------|-----------------|
-| \`phi3:mini\` | ~5min | Raspberry Pi 4 (8GB RAM + swap) |
-| \`mistral:7b-instruct\` | ~30s | Full analysis, precise commands |
-| \`deepseek-r1:7b\` | ~45s | Detailed analysis, mitigations |
+| Model | Min RAM | Storage | Speed (CPU) | Best for | Node |
+|-------|---------|---------|-------------|----------|------|
+| `phi3:mini` | 4 GB | ~2.3 GB | ~5 min | Quick triage, lightweight inference, works on Pi — limited reasoning depth | Raspberry Pi 4 / PC |
+| `mistral:7b-instruct` | 8 GB | ~4.1 GB | ~30 s (PC) | **Recommended default.** Full analysis, precise actionable commands, best accuracy/speed ratio | PC only |
+| `deepseek-r1:7b` | 8 GB | ~4.5 GB | ~45 s (PC) | In-depth analysis, detailed mitigation steps, chain-of-thought reasoning | PC only |
 
-All run **100% offline** with Ollama.
+> **Note:** Speed benchmarks measured on a PC with 32 GB RAM (CPU-only, no GPU). GPU acceleration via CUDA/ROCm will significantly reduce inference time. The Pi can only run `phi3:mini` reliably — `mistral:7b` causes thermal throttling and OOM on Pi 4B 8GB.
+
+All models run **100% offline** via Ollama — no internet connection required.
 
 ---
 
@@ -246,9 +258,18 @@ python -m pytest tests/test_tools.py -v
 
 ## Requirements
 
-**Windows:** Python 3.11+ · Ollama · \`pip install -r requirements.txt\`
+**Windows PC (Primary node — required for full functionality):**
+- Python 3.11+
+- Ollama with `mistral:7b-instruct` (recommended) or `deepseek-r1:7b`
+- 8 GB RAM minimum · 16 GB+ recommended
+- `pip install -r requirements.txt`
 
-**Raspberry Pi:** Kali Linux · Python 3.11+ · Ollama · 2GB swap recommended
+**Raspberry Pi 4 (Secondary node — optional):**
+- Kali Linux
+- Python 3.11+
+- Ollama with `phi3:mini` only (heavier models not supported)
+- 8 GB RAM model recommended · 2 GB swap required
+- Atheros AR9271 adapter for live capture (Option 10)
 
 ---
 
