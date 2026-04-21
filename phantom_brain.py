@@ -1,9 +1,9 @@
 """
-PHANTOM BRAIN v0.7
+PHANTOM BRAIN v0.9
 Analizador offline de pentesting con IA
 WiFi + Sub-GHz + NFC + WPA2 + Proxmark3
 
-Mejoras v0.7:
+Mejoras v0.9:
 - Fix SYSTEM_PROMPT: wiegand decode usa -p (no --raw)
 - Modelo por defecto cambiado a deepseek-r1:7b
 
@@ -45,7 +45,7 @@ except ImportError:
 
 # --- Configuracion por defecto (se sobreescribe con config.yaml) ---
 CONFIG_DEFAULT = {
-    "proyecto": {"nombre": "PHANTOM BRAIN", "version": "0.7"},
+    "proyecto": {"nombre": "PHANTOM BRAIN", "version": "0.9"},
     "rutas": {"capturas": ".", "reportes": "reportes"},
     "modelos": [
         {"nombre": "phi3:mini", "descripcion": "Rapido, respuestas cortas"},
@@ -133,7 +133,7 @@ from prompts.system_prompts import SYSTEM_PROMPTS, SYSTEM_PROMPT, obtener_prompt
 # --- Funciones de UI ---
 
 def mostrar_banner():
-    ver = CONFIG.get("proyecto", {}).get("version", "0.7")
+    ver = CONFIG.get("proyecto", {}).get("version", "0.9")
     print("=" * 55)
     print(f"        PHANTOM BRAIN v{ver}")
     print("    Analizador offline de pentesting con IA")
