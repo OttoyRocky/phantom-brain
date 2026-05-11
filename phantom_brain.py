@@ -817,7 +817,7 @@ def menu_captura_vivo():
             # --- PASO 8: Ofrecer crackeo ---
             crackear = input("\n[6] Hash listo. Iniciar crackeo con rockyou.txt ahora? (s/n): ").strip().lower()
             if crackear == "s":
-                wordlist = "/home/otto/rockyou.txt"
+                wordlist = "/usr/share/wordlists/rockyou.txt"
                 if not os.path.exists(wordlist):
                     wordlist = input("    Ruta al wordlist: ").strip()
                 print(f"\n    Ejecutando hashcat -m 22000 {archivo_hash} {wordlist}")
@@ -850,7 +850,7 @@ Deauth usado: {'Si' if usar_deauth == 's' else 'No'}
 Timestamp: {timestamp2}
 
 Comandos de crackeo:
-hashcat -m 22000 {archivo_hash} /home/otto/rockyou.txt
+hashcat -m 22000 {archivo_hash} /usr/share/wordlists/rockyou.txt
 hashcat -m 22000 {archivo_hash} -a 3 ?l?l?l?l?d?d?d?d
 """
     return contenido, False, "WPA2", None
