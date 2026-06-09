@@ -52,7 +52,7 @@ CONFIG_DEFAULT = {
         {"nombre": "mistral:7b-instruct", "descripcion": "Completo, recomendado"},
         {"nombre": "deepseek-r1:7b", "descripcion": "Especializado en ciberseguridad"},
     ],
-    "modelo_por_defecto": "mistral:7b-instruct",
+    "modelo_por_defecto": "phi3:mini",
     "ia": {"num_predict": 3000, "temperatura": 0.7},
     "base_de_datos": {"archivo": "phantom_brain.db", "guardar_reportes": True},
     "logging": {"nivel": "INFO", "archivo": "phantom_brain.log", "consola": True},
@@ -608,8 +608,12 @@ def menu_captura_vivo():
     import subprocess
     import time
 
-    INTERFAZ = "wlan1"
-    INTERFAZ_MON = "wlan1"
+    print("\n  Selecciona la interfaz de captura:")
+    print("  1. wlan1 - Atheros AR9271 (2.4GHz)")
+    print("  2. wlan2 - ALFA AWUS036AXML (2.4/5GHz/6GHz)")
+    sel_if = input("  Opcion (1-2, Enter=wlan1): ").strip()
+    INTERFAZ = "wlan2" if sel_if == "2" else "wlan1"
+    INTERFAZ_MON = INTERFAZ
     DIRECTORIO_PCAP = os.path.join(os.path.dirname(os.path.abspath(__file__)), "pcap")
     os.makedirs(DIRECTORIO_PCAP, exist_ok=True)
 
